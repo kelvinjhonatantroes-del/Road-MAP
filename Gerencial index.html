@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importar, anexar e compartilhar plano | Road Map AEMCO</title>
+<style>
+  :root {
+    --bg:#f4f6f9; --fg:#1b2430; --muted:#566273; --card:#ffffff; --line:#cfd6df;
+    --accent:#0b5ed7; --accent-fg:#ffffff; --ok:#146c2e; --err:#b42318; --warn:#8a5a00;
+  }
+  body.dark {
+    --bg:#10161f; --fg:#e8edf3; --muted:#a9b4c2; --card:#1a2330; --line:#3a4656;
+    --accent:#6ea8ff; --accent-fg:#0b1220; --ok:#6fd48b; --err:#ff8a80; --warn:#f2c14e;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+         background:var(--bg); color:var(--fg); line-height:1.5; }
+  .skip { position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-fg);
+          padding:8px 12px; z-index:10; }
+  .skip:focus { left:8px; top:8px; }
+  header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 20px;
+           display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  header h1 { margin:0; font-size:1.15rem; }
+  header p { margin:0; color:var(--muted); font-size:.9rem; }
+  main { max-width:1000px; margin:0 auto; padding:16px 20px 48px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px;
+            padding:18px; margin-top:16px; }
+  h2 { margin:0 0 4px; font-size:1.15rem; }
+  h3 { margin:18px 0 6px; font-size:1rem; }
+  .hint { color:var(--muted); font-size:.9rem; margin:0 0 12px; }
+  label, legend { display:block; font-weight:600; margin:12px 0 4px; }
+  .opt { font-weight:400; color:var(--muted); }
+  input[type=text], input[type=email], textarea, select {
+    width:100%; padding:9px; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg); color:var(--fg); font:inherit; }
+  input[type=file] { width:100%; padding:10px; border:2px dashed var(--line); border-radius:8px;
+    background:var(--bg); color:var(--fg); font:inherit; }
+  .drop.over input[type=file] { border-color:var(--accent); }
+  fieldset { border:1px solid var(--line); border-radius:8px; margin:12px 0 0; padding:8px 12px 12px; }
+  fieldset label, .check { display:flex; gap:8px; align-items:flex-start; font-weight:400; margin:6px 0; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:0 16px; }
+  button, .btn { font:inherit; padding:9px 14px; border-radius:8px; border:1px solid var(--line);
+    background:var(--card); color:var(--fg); cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); font-weight:600; }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  .table-wrap { overflow-x:auto; margin-top:10px; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  caption { text-align:left; font-weight:600; padding:4px 0 8px; }
+  th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--bg); }
+  .ok { color:var(--ok); } .bad { color:var(--err); } .warn { color:var(--warn); }
+  #status { min-height:1.5em; font-weight:600; margin-top:12px; }
+  #status.error { color:var(--err); }
+  #attachPreview { max-width:100%; max-height:420px; display:none; margin-top:12px;
+    border:1px solid var(--line); border-radius:8px; }
+  .kpis { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+  .kpi { border:1px solid var(--line); border-radius:10px; padding:8px 14px; }
+  .kpi b { display:block; font-size:1.4rem; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para o conteúdo principal</a>
+
+<header>
+  <div>
+    <h1>ROAD MAP AEMCO</h1>
+    <p>Importar, anexar e compartilhar plano</p>
+  </div>
+  <button type="button" id="themeBtn" aria-pressed="false">Alternar tema</button>
+</header>
+
+<main id="conteudo" tabindex="-1">
+  <p class="hint" style="margin-top:16px">Dados armazenados neste navegador. Para que outra pessoa receba o plano,
+    use a seção 3 e envie o pacote gerado.</p>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <!-- Dados do plano -->
+  <section aria-labelledby="t-plano">
+    <h2 id="t-plano">Dados do plano</h2>
+    <p class="hint">Campos marcados com asterisco são obrigatórios.</p>
+    <div class="grid">
+      <div>
+        <label for="planName">Nome do plano *</label>
+        <input type="text" id="planName" autocomplete="off" required>
+      </div>
+      <div>
+        <label for="planLeader">Líder principal</label>
+        <input type="text" id="planLeader" autocomplete="name">
+      </div>
+    </div>
+    <div class="kpis" id="kpis" aria-label="Resumo do plano"></div>
+  </section>
+
+  <!-- 1. Importar -->
+  <section aria-labelledby="t-importar">
+    <h2 id="t-importar">1. Importar plano</h2>
+    <p class="hint">Aceita CSV (separado por vírgula, ponto e vírgula ou tabulação) e pacotes JSON gerados por esta
+      página ou pelo Backup JSON. Para Excel, salve a planilha como CSV antes de importar.</p>
+
+    <form id="importForm" novalidate>
+      <div class="drop" id="drop">
+        <label for="importFile">Arquivo do plano (.csv ou .json) *</label>
+        <input type="file" id="importFile" accept=".csv,.json,text/csv,application/json" aria-describedby="importHelp">
+        <p class="hint" id="importHelp">Colunas reconhecidas: Código, Atividade, Pilar, Responsável, Tipo, Início,
+          Término, Nova data, Status e Progresso. Datas em DD/MM/AAAA ou AAAA-MM-DD.</p>
+      </div>
+
+      <fieldset>
+        <legend>Como importar as atividades</legend>
+        <label><input type="radio" name="mode" value="merge" checked>
+          Mesclar com as atuais (atividades com o mesmo código são atualizadas)</label>
+        <label><input type="radio" name="mode" value="replace">
+          Substituir todas as atividades atuais</label>
+      </fieldset>
+
+      <div id="pkgOptions" hidden>
+        <label class="check"><input type="checkbox" id="importPkgImage" checked>
+          O pacote contém uma imagem anexada. Importar também a imagem.</label>
+      </div>
+
+      <div id="previewBox" hidden>
+        <h3 id="previewTitle">Pré-visualização</h3>
+        <p id="previewSummary" role="status" aria-live="polite"></p>
+        <div class="table-wrap">
+          <table>
+            <caption>Primeiras linhas lidas do arquivo</caption>
+            <thead><tr>
+              <th scope="col">Linha</th><th scope="col">Código</th><th scope="col">Atividade</th>
+              <th scope="col">Início</th><th scope="col">Término</th><th scope="col">Status</th>
+              <th scope="col">Situação</th>
+            </tr></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="primary" id="confirmImport" disabled>Confirmar importação</button>
+        <button type="button" id="cancelImport" disabled>Cancelar</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2. Anexar -->
+  <section aria-labelledby="t-anexar">
+    <h2 id="t-anexar">2. Anexar imagem do plano (A3)</h2>
+    <p class="hint">Exporte o A3 em paisagem como PNG, JPG ou WEBP (PDF não é aceito). A imagem é reduzida
+      automaticamente para caber no armazenamento do navegador e passa a fazer parte do pacote compartilhado.</p>
+
+    <form id="attachForm" novalidate>
+      <label for="attachFile">Imagem do plano *</label>
+      <input type="file" id="attachFile" accept="image/png,image/jpeg,image/webp" aria-describedby="attachHelp">
+      <p class="hint" id="attachHelp">Tamanho máximo do arquivo: 15 MB.</p>
+
+      <label for="attachAlt">Descrição da imagem <span class="opt">(texto alternativo para leitores de tela)</span></label>
+      <input type="text" id="attachAlt" placeholder="Ex.: A3 do projeto com os quatro pilares e metas">
+
+      <div class="actions">
+        <button type="button" id="attachRemove" disabled>Remover imagem</button>
+        <button type="button" id="attachDownload" disabled>Baixar imagem</button>
+      </div>
+    </form>
+    <img id="attachPreview" alt="">
+  </section>
+
+  <!-- 3. Compartilhar -->
+  <section aria-labelledby="t-compartilhar">
+    <h2 id="t-compartilhar">3. Compartilhar plano</h2>
+    <p class="hint">O pacote é um arquivo JSON com atividades e imagem. Quem recebê-lo abre esta página e usa a
+      seção 1 para importá-lo.</p>
+
+    <form id="shareForm" novalidate>
+      <fieldset>
+        <legend>O que incluir no pacote</legend>
+        <label><input type="checkbox" id="incActivities" checked> Atividades do plano</label>
+        <label><input type="checkbox" id="incImage" checked> Imagem anexada (A3)</label>
+      </fieldset>
+
+      <div class="grid">
+        <div>
+          <label for="shareEmail">E-mail do destinatário <span class="opt">(opcional)</span></label>
+          <input type="email" id="shareEmail" autocomplete="email" placeholder="nome@empresa.com">
+        </div>
+      </div>
+
+      <label for="shareMsg">Mensagem <span class="opt">(opcional)</span></label>
+      <textarea id="shareMsg" rows="3" placeholder="Ex.: Segue o plano atualizado. Para abrir, use Importar plano."></textarea>
+
+      <div class="actions">
+        <button type="button" class="primary" id="btnDownload">Baixar pacote (.json)</button>
+        <button type="button" id="btnShare">Compartilhar pelo aparelho</button>
+        <button type="button" id="btnMail">Abrir e-mail</button>
+        <button type="button" id="btnCopy">Copiar resumo</button>
+      </div>
+      <p class="hint">O e-mail não anexa arquivos automaticamente: baixe o pacote e anexe-o à mensagem.</p>
+    </form>
+  </section>
+
+  <!-- Atividades atuais -->
+  <section aria-labelledby="t-atividades">
+    <h2 id="t-atividades">Atividades do plano</h2>
+    <div class="table-wrap">
+      <table>
+        <caption class="hint">Atividades atualmente armazenadas neste navegador</caption>
+        <thead><tr>
+          <th scope="col">Código</th><th scope="col">Atividade</th><th scope="col">Pilar</th>
+          <th scope="col">Responsável</th><th scope="col">Início</th><th scope="col">Término</th>
+          <th scope="col">Status</th><th scope="col">Progresso</th>
+        </tr></thead>
+        <tbody id="actBody"></tbody>
+      </table>
+    </div>
+    <p id="emptyMsg" class="hint">Nenhuma atividade ainda. Importe um arquivo na seção 1.</p>
+    <div class="actions">
+      <button type="button" id="clearAll">Apagar todos os dados deste navegador</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'roadmap-aemco-plano-v1';
+  var FORMAT = 'roadmap-aemco-plan';
+  var STATUSES = ['Concluído', 'Andamento', 'Não iniciado', 'Atrasado'];
+  var $ = function (id) { return document.getElementById(id); };
+
+  var plan = load();
+  var pending = null; // { activities, errors, pkg }
+
+  /* ---------- Utilidades ---------- */
+  function emptyPlan() {
+    return { name: '', leader: '', activities: [], attachment: null, updatedAt: null };
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      return raw ? Object.assign(emptyPlan(), JSON.parse(raw)) : emptyPlan();
+    } catch (e) { return emptyPlan(); }
+  }
+  function save() {
+    plan.updatedAt = new Date().toISOString();
+    try { localStorage.setItem(KEY, JSON.stringify(plan)); return true; }
+    catch (e) { notify('Não foi possível salvar: o armazenamento do navegador está cheio.', true); return false; }
+  }
+  function notify(msg, isError) {
+    var el = $('status');
+    el.textContent = msg;
+    el.className = isError ? 'error' : '';
+    if (isError) el.setAttribute('role', 'alert'); else el.setAttribute('role', 'status');
+  }
+  function norm(s) {
+    return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  function todayISO() { return new Date().toISOString().slice(0, 10); }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function cell(tr, text, cls) {
+    var td = document.createElement('td'); td.textContent = text == null ? '' : text;
+    if (cls) td.className = cls; tr.appendChild(td); return td;
+  }
+
+  /* Retorna '' (vazio), null (inválida) ou 'AAAA-MM-DD'. */
+  function normDate(v) {
+    var t = String(v == null ? '' : v).trim();
+    if (!t) return '';
+    var y, m, d, x;
+    if ((x = t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) { d = +x[1]; m = +x[2]; y = +x[3]; }
+    else if ((x = t.match(/^(\d{4})-(\d{2})-(\d{2})/))) { y = +x[1]; m = +x[2]; d = +x[3]; }
+    else return null;
+    var dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+    return dt.toISOString().slice(0, 10);
+  }
+  function normStatus(v) {
+    var t = norm(v);
+    if (!t) return 'Não iniciado';
+    if (t.indexOf('conclu') === 0) return 'Concluído';
+    if (t.indexOf('andamento') >= 0) return 'Andamento';
+    if (t.indexOf('nao inic') === 0 || t.indexOf('nao') === 0) return 'Não iniciado';
+    if (t.indexOf('atras') === 0) return 'Atrasado';
+    return null;
+  }
+  function normType(v) {
+    var t = norm(v);
+    return t.indexOf('tarefa') >= 0 ? 'Tarefa' : 'Ação Macro';
+  }
+  function deadline(a) { return a.newEnd || a.end; }
+  function effectiveStatus(a) {
+    if (a.status === 'Andamento' && deadline(a) && deadline(a) < todayISO()) return 'Atrasado';
+    return a.status;
+  }
+
+  /* ---------- Leitura de CSV ---------- */
+  function parseCSV(text) {
+    text = text.replace(/^\uFEFF/, '');
+    var first = text.split(/\r?\n/)[0] || '';
+    var delim = [';', '\t', ','].reduce(function (best, d) {
+      return first.split(d).length > first.split(best).length ? d : best;
+    }, ',');
+    var rows = [], row = [], cur = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') q = false;
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === delim) { row.push(cur); cur = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(cur); cur = '';
+        if (row.some(function (x) { return x.trim() !== ''; })) rows.push(row);
+        row = [];
+      } else cur += c;
+    }
+    row.push(cur);
+    if (row.some(function (x) { return x.trim() !== ''; })) rows.push(row);
+    return rows;
+  }
+
+  var ALIASES = {
+    code: ['codigo', 'cod', 'id'],
+    name: ['atividade', 'nome', 'tarefa', 'acao'],
+    pillar: ['pilar'],
+    owner: ['responsavel', 'lider'],
+    type: ['tipo'],
+    start: ['inicio', 'data de inicio', 'data inicio'],
+    end: ['termino', 'data de termino', 'previsao de conclusao', 'prazo', 'prazo original'],
+    newEnd: ['nova data', 'nova data de conclusao', 'prazo replanejado'],
+    status: ['status', 'situacao'],
+    progress: ['progresso', '% progresso', 'andamento (%)']
+  };
+  function mapHeaders(headerRow) {
+    var map = {};
+    headerRow.forEach(function (h, idx) {
+      var n = norm(h);
+      Object.keys(ALIASES).forEach(function (k) {
+        if (map[k] === undefined && ALIASES[k].indexOf(n) >= 0) map[k] = idx;
+      });
+    });
+    return map;
+  }
+
+  /* Valida um objeto bruto e devolve { activity, errors } */
+  function buildActivity(raw) {
+    var errors = [];
+    var a = {
+      code: String(raw.code || '').trim(),
+      name: String(raw.name || '').trim(),
+      pillar: String(raw.pillar || '').trim(),
+      owner: String(raw.owner || '').trim(),
+      type: normType(raw.type),
+      start: normDate(raw.start),
+      end: normDate(raw.end),
+      newEnd: normDate(raw.newEnd),
+      status: normStatus(raw.status),
+      progress: 0,
+      justification: String(raw.justification || '').trim()
+    };
+    if (!a.code) errors.push('código ausente');
+    if (!a.name) errors.push('atividade ausente');
+    if (a.start === null) { errors.push('data de início inválida'); a.start = ''; }
+    if (a.end === null) { errors.push('data de término inválida'); a.end = ''; }
+    if (a.newEnd === null) { errors.push('nova data inválida'); a.newEnd = ''; }
+    if (a.status === null) { errors.push('status desconhecido'); a.status = 'Não iniciado'; }
+    if (a.start && a.end && a.end < a.start) errors.push('término anterior ao início');
+    var p = parseFloat(String(raw.progress == null ? '0' : raw.progress).replace('%', '').replace(',', '.'));
+    a.progress = isNaN(p) ? 0 : Math.max(0, Math.min(100, Math.round(p)));
+    if (a.status === 'Concluído') a.progress = 100;
+    return { activity: a, errors: errors };
+  }
+
+  /* ---------- Importação ---------- */
+  function readFileAsText(file) {
+    return new Promise(function (res, rej) {
+      var r = new FileReader();
+      r.onload = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+      r.readAsText(file, 'UTF-8');
+    });
+  }
+
+  function handleImportFile(file) {
+    resetPending();
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { notify('Arquivo muito grande (máximo 20 MB).', true); return; }
+    var isJson = /\.json$/i.test(file.name) || file.type === 'application/json';
+    readFileAsText(file).then(function (text) {
+      var items = [], pkg = null;
+      if (isJson) {
+        var data = JSON.parse(text);
+        if (data && data.format === FORMAT && data.plan) { pkg = data.plan; items = pkg.activities || []; }
+        else if (data && Array.isArray(data.activities)) { pkg = data; items = data.activities; }
+        else if (Array.isArray(data)) items = data;
+        else throw new Error('Estrutura JSON não reconhecida.');
+        items = items.map(function (x, i) { return { line: i + 1, raw: x }; });
+      } else {
+        var rows = parseCSV(text);
+        if (rows.length < 2) throw new Error('O CSV precisa ter cabeçalho e ao menos uma linha.');
+        var map = mapHeaders(rows[0]);
+        if (map.name === undefined || map.code === undefined)
+          throw new Error('Não encontrei as colunas "Código" e "Atividade" no cabeçalho.');
+        items = rows.slice(1).map(function (r, i) {
+          var raw = {};
+          Object.keys(map).forEach(function (k) { raw[k] = r[map[k]]; });
+          return { line: i + 2, raw: raw };
+        });
+      }
+      if (!items.length) throw new Error('Nenhuma atividade encontrada no arquivo.');
+      var built = items.map(function (it) {
+        var b = buildActivity(it.raw); b.line = it.line; return b;
+      });
+      pending = { items: built, pkg: pkg };
+      renderPreview();
+    }).catch(function (e) {
+      notify('Não foi possível ler o arquivo: ' + e.message, true);
+    });
+  }
+
+  function renderPreview() {
+    var body = $('previewBody'); body.innerHTML = '';
+    var valid = 0, invalid = 0;
+    pending.items.forEach(function (b, i) {
+      if (b.errors.length) invalid++; else valid++;
+      if (i >= 50) return;
+      var tr = document.createElement('tr');
+      cell(tr, b.line); cell(tr, b.activity.code); cell(tr, b.activity.name);
+      cell(tr, fmtDate(b.activity.start)); cell(tr, fmtDate(b.activity.end)); cell(tr, b.activity.status);
+      if (b.errors.length) cell(tr, 'Erro: ' + b.errors.join('; '), 'bad');
+      else cell(tr, 'OK', 'ok');
+      body.appendChild(tr);
+    });
+    var msg = valid + ' linha(s) válida(s)';
+    if (invalid) msg += ' e ' + invalid + ' com erro (serão ignoradas)';
+    if (pending.items.length > 50) msg += '. Exibindo as 50 primeiras.';
+    $('previewSummary').textContent = msg + '.';
+    $('previewBox').hidden = false;
+    $('pkgOptions').hidden = !(pending.pkg && pending.pkg.attachment && pending.pkg.attachment.dataUrl);
+    $('confirmImport').disabled = valid === 0;
+    $('cancelImport').disabled = false;
+    notify('Arquivo lido. Confira a pré-visualização e confirme a importação.');
+  }
+
+  function resetPending() {
+    pending = null;
+    $('previewBox').hidden = true; $('pkgOptions').hidden = true;
+    $('previewBody').innerHTML = '';
+    $('confirmImport').disabled = true; $('cancelImport').disabled = true;
+  }
+
+  function confirmImport(ev) {
+    ev.preventDefault();
+    if (!pending) { notify('Selecione um arquivo antes de importar.', true); $('importFile').focus(); return; }
+    var good = pending.items.filter(function (b) { return !b.errors.length; }).map(function (b) { return b.activity; });
+    var mode = document.querySelector('input[name=mode]:checked').value;
+    var backup = JSON.stringify(plan);
+    if (mode === 'replace') plan.activities = good;
+    else good.forEach(function (a) {
+      var i = plan.activities.findIndex(function (x) { return x.code === a.code; });
+      if (i >= 0) plan.activities[i] = Object.assign(plan.activities[i], a); else plan.activities.push(a);
+    });
+    var pkg = pending.pkg;
+    if (pkg) {
+      if (pkg.name && !plan.name) plan.name = pkg.name;
+      if (pkg.leader && !plan.leader) plan.leader = pkg.leader;
+      if (pkg.attachment && pkg.attachment.dataUrl && $('importPkgImage').checked) plan.attachment = pkg.attachment;
+    }
+    if (!save()) { plan = JSON.parse(backup); return; }
+    var n = good.length;
+    resetPending(); $('importForm').reset();
+    renderAll();
+    notify(n + ' atividade(s) importada(s) com sucesso.');
+  }
+
+  /* ---------- Anexo de imagem ---------- */
+  function resizeImage(file, maxSide) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var s = Math.min(1, maxSide / Math.max(img.width, img.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('imagem inválida')); };
+      img.src = url;
+    });
+  }
+
+  function handleAttach(file) {
+    if (!file) return;
+    var okTypes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (okTypes.indexOf(file.type) < 0) { notify('Formato não aceito. Envie PNG, JPG ou WEBP (PDF não é aceito).', true); return; }
+    if (file.size > 15 * 1024 * 1024) { notify('A imagem excede 15 MB.', true); return; }
+    resizeImage(file, 1800).then(function (dataUrl) {
+      var prev = plan.attachment;
+      plan.attachment = { name: file.name, dataUrl: dataUrl, alt: $('attachAlt').value.trim() };
+      if (!save()) plan.attachment = prev;
+      else notify('Imagem anexada: ' + file.name + '.');
+      renderAttachment();
+    }).catch(function () { notify('Não foi possível processar a imagem.', true); });
+  }
+
+  function renderAttachment() {
+    var img = $('attachPreview'), has = !!(plan.attachment && plan.attachment.dataUrl);
+    img.style.display = has ? 'block' : 'none';
+    img.src = has ? plan.attachment.dataUrl : '';
+    img.alt = has ? (plan.attachment.alt || 'Imagem do plano anexada: ' + plan.attachment.name) : '';
+    $('attachRemove').disabled = !has; $('attachDownload').disabled = !has;
+    $('attachAlt').value = has ? (plan.attachment.alt || '') : $('attachAlt').value;
+    $('incImage').disabled = !has; if (!has) $('incImage').checked = false;
+  }
+
+  /* ---------- Compartilhamento ---------- */
+  function slug(s) {
+    return norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'plano';
+  }
+  function buildPackage() {
+    var pkg = {
+      name: plan.name, leader: plan.leader,
+      activities: $('incActivities').checked ? plan.activities : [],
+      attachment: ($('incImage').checked && plan.attachment) ? plan.attachment : null,
+      message: $('shareMsg').value.trim(),
+      sharedAt: new Date().toISOString()
+    };
+    return { format: FORMAT, version: 1, plan: pkg };
+  }
+  function validateShare() {
+    if (!plan.name.trim()) {
+      notify('Informe o nome do plano antes de compartilhar.', true); $('planName').focus(); return false;
+    }
+    if (!$('incActivities').checked && !$('incImage').checked) {
+      notify('Selecione ao menos um item para incluir no pacote.', true); $('incActivities').focus(); return false;
+    }
+    if (!plan.activities.length && !plan.attachment) {
+      notify('Não há nada para compartilhar. Importe atividades ou anexe uma imagem.', true); return false;
+    }
+    return true;
+  }
+  function packageFile() {
+    var blob = new Blob([JSON.stringify(buildPackage(), null, 2)], { type: 'application/json' });
+    return new File([blob], 'plano-' + slug(plan.name) + '.json', { type: 'application/json' });
+  }
+  function download(file) {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(file);
+    a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+  function summaryText() {
+    var acts = plan.activities, late = acts.filter(function (a) { return effectiveStatus(a) === 'Atrasado'; }).length;
+    var avg = acts.length ? Math.round(acts.reduce(function (s, a) { return s + a.progress; }, 0) / acts.length) : 0;
+    var lines = ['Plano: ' + plan.name];
+    if (plan.leader) lines.push('Líder: ' + plan.leader);
+    lines.push('Atividades: ' + acts.length + ' | Progresso médio: ' + avg + '% | Atrasadas: ' + late);
+    var m = $('shareMsg').value.trim(); if (m) lines.push('', m);
+    lines.push('', 'Para abrir o plano, use "Importar plano" nesta página com o arquivo JSON enviado.');
+    return lines.join('\n');
+  }
+
+  function onDownloadPkg() {
+    if (!validateShare()) return;
+    download(packageFile()); notify('Pacote baixado. Envie o arquivo ao destinatário.');
+  }
+  function onSharePkg() {
+    if (!validateShare()) return;
+    var file = packageFile();
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Plano ' + plan.name, text: summaryText() })
+        .then(function () { notify('Plano compartilhado.'); })
+        .catch(function (e) { if (e && e.name !== 'AbortError') notify('Falha ao compartilhar. Use "Baixar pacote".', true); });
+    } else {
+      download(file);
+      notify('Este navegador não compartilha arquivos diretamente. O pacote foi baixado: envie-o manualmente.', true);
+    }
+  }
+  function onMail() {
+    if (!validateShare()) return;
+    var email = $('shareEmail').value.trim();
+    if (email && !$('shareEmail').checkValidity()) {
+      notify('O e-mail do destinatário parece inválido.', true); $('shareEmail').focus(); return;
+    }
+    download(packageFile());
+    var url = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent('Plano: ' + plan.name) +
+      '&body=' + encodeURIComponent(summaryText() + '\n\n(Anexe o arquivo plano-' + slug(plan.name) + '.json baixado.)');
+    window.location.href = url;
+    notify('Pacote baixado. Anexe-o ao e-mail que será aberto.');
+  }
+  function onCopy() {
+    if (!plan.name.trim()) { notify('Informe o nome do plano antes de copiar o resumo.', true); $('planName').focus(); return; }
+    var text = summaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { notify('Resumo copiado.'); },
+        function () { notify('Não foi possível copiar o resumo.', true); });
+    } else notify('Seu navegador não permite copiar automaticamente.', true);
+  }
+
+  /* ---------- Renderização ---------- */
+  function renderAll() {
+    $('planName').value = plan.name; $('planLeader').value = plan.leader;
+    var acts = plan.activities;
+    var avg = acts.length ? Math.round(acts.reduce(function (s, a) { return s + a.progress; }, 0) / acts.length) : 0;
+    var done = acts.filter(function (a) { return a.status === 'Concluído'; }).length;
+    var late = acts.filter(function (a) { return effectiveStatus(a) === 'Atrasado'; }).length;
+    var k = $('kpis'); k.innerHTML = '';
+    [['Atividades', acts.length], ['Progresso médio', avg + '%'], ['Concluídas', done], ['Atrasadas', late]]
+      .forEach(function (p) {
+        var d = document.createElement('div'); d.className = 'kpi';
+        var b = document.createElement('b'); b.textContent = p[1];
+        d.appendChild(b); d.appendChild(document.createTextNode(p[0])); k.appendChild(d);
+      });
+    var body = $('actBody'); body.innerHTML = '';
+    acts.forEach(function (a) {
+      var tr = document.createElement('tr'), st = effectiveStatus(a);
+      cell(tr, a.code); cell(tr, a.name); cell(tr, a.pillar); cell(tr, a.owner);
+      cell(tr, fmtDate(a.start)); cell(tr, fmtDate(deadline(a)));
+      cell(tr, st === 'Atrasado' && a.status !== 'Atrasado' ? 'Atrasado (automático)' : st, st === 'Atrasado' ? 'bad' : '');
+      cell(tr, a.progress + '%'); body.appendChild(tr);
+    });
+    $('emptyMsg').hidden = acts.length > 0;
+    renderAttachment();
+  }
+
+  /* ---------- Eventos ---------- */
+  $('planName').addEventListener('input', function (e) { plan.name = e.target.value; save(); });
+  $('planLeader').addEventListener('input', function (e) { plan.leader = e.target.value; save(); });
+  $('importFile').addEventListener('change', function (e) { handleImportFile(e.target.files[0]); });
+  $('importForm').addEventListener('submit', confirmImport);
+  $('cancelImport').addEventListener('click', function () {
+    resetPending(); $('importForm').reset(); notify('Importação cancelada.'); $('importFile').focus();
+  });
+  var drop = $('drop');
+  ['dragenter', 'dragover'].forEach(function (n) {
+    drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (n) {
+    drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove('over'); });
+  });
+  drop.addEventListener('drop', function (e) {
+    var f = e.dataTransfer.files[0];
+    if (f) { try { $('importFile').files = e.dataTransfer.files; } catch (x) {} handleImportFile(f); }
+  });
+
+  $('attachFile').addEventListener('change', function (e) { handleAttach(e.target.files[0]); e.target.value = ''; });
+  $('attachAlt').addEventListener('change', function (e) {
+    if (plan.attachment) { plan.attachment.alt = e.target.value.trim(); save(); renderAttachment(); }
+  });
+  $('attachRemove').addEventListener('click', function () {
+    if (!confirm('Remover a imagem anexada?')) return;
+    plan.attachment = null; save(); renderAttachment(); notify('Imagem removida.'); $('attachFile').focus();
+  });
+  $('attachDownload').addEventListener('click', function () {
+    if (!plan.attachment) return;
+    var a = document.createElement('a'); a.href = plan.attachment.dataUrl;
+    a.download = slug(plan.name) + '-a3.jpg'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  $('btnDownload').addEventListener('click', onDownloadPkg);
+  $('btnShare').addEventListener('click', onSharePkg);
+  $('btnMail').addEventListener('click', onMail);
+  $('btnCopy').addEventListener('click', onCopy);
+  $('shareForm').addEventListener('submit', function (e) { e.preventDefault(); });
+  $('attachForm').addEventListener('submit', function (e) { e.preventDefault(); });
+
+  $('clearAll').addEventListener('click', function () {
+    if (!confirm('Apagar plano, atividades e imagem deste navegador? Esta ação não pode ser desfeita.')) return;
+    plan = emptyPlan(); localStorage.removeItem(KEY); resetPending(); renderAll(); notify('Dados apagados.');
+  });
+  $('themeBtn').addEventListener('click', function () {
+    var on = document.body.classList.toggle('dark');
+    this.setAttribute('aria-pressed', String(on));
+  });
+  if (!navigator.share) $('btnShare').title = 'Seu navegador pode baixar o pacote em vez de abrir o menu de compartilhamento.';
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
