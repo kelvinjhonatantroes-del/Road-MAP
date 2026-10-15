@@ -1,0 +1,6137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>Roadmap AEMCO — Gestão de Projetos</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --background: #f3f6fa;
+      --surface: #ffffff;
+      --surface-alt: #eaf0f7;
+      --text: #172033;
+      --muted: #697586;
+      --border: #d8e0eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16803c;
+      --warning: #ad6800;
+      --danger: #c62828;
+      --info: #087ea4;
+      --shadow: 0 8px 24px rgba(15, 23, 42, .08);
+    }
+
+    body.dark {
+      --background: #0f172a;
+      --surface: #172033;
+      --surface-alt: #24324a;
+      --text: #f8fafc;
+      --muted: #aab6c8;
+      --border: #34445d;
+      --shadow: 0 8px 24px rgba(0, 0, 0, .25);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--background);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 245px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 18px 14px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 8px 20px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      color: #fff;
+      background: var(--primary);
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .brand strong,
+    .brand small {
+      display: block;
+    }
+
+    .brand strong {
+      font-size: 13px;
+    }
+
+    .brand small {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .menu {
+      display: grid;
+      gap: 5px;
+    }
+
+    .menu button {
+      padding: 11px 12px;
+      border: 0;
+      border-radius: 8px;
+      color: var(--muted);
+      background: transparent;
+      text-align: left;
+    }
+
+    .menu button:hover,
+    .menu button.active {
+      color: var(--primary);
+      background: rgba(37, 99, 235, .12);
+      font-weight: bold;
+    }
+
+    .sidebar-footer {
+      position: absolute;
+      right: 14px;
+      bottom: 18px;
+      left: 14px;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      min-height: 72px;
+      padding: 13px 27px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .topbar p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .project-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .project-selector label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .content {
+      max-width: 1900px;
+      margin: auto;
+      padding: 25px 27px 50px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-heading,
+    .panel-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .page-heading {
+      margin-bottom: 18px;
+    }
+
+    .page-heading h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .page-heading p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .panel-heading {
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .panel-heading h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .panel-heading span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .card,
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      min-height: 105px;
+      padding: 15px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      margin-top: 13px;
+      font-size: 27px;
+      font-weight: bold;
+    }
+
+    .metric-help {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--surface-alt);
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn.danger {
+      color: var(--danger);
+    }
+
+    .btn.small {
+      padding: 6px 9px;
+      font-size: 12px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 10px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .13);
+    }
+
+    .topbar select {
+      width: auto;
+      min-width: 245px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .filters input {
+      flex: 1;
+      min-width: 230px;
+    }
+
+    .filters select {
+      width: auto;
+      min-width: 145px;
+    }
+
+    .table-wrapper {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1100px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      background: var(--surface-alt);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    tr.clickable {
+      cursor: pointer;
+    }
+
+    tr.clickable:hover td {
+      background: rgba(37, 99, 235, .06);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .status::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .status-success {
+      color: var(--success);
+      background: rgba(22, 128, 60, .13);
+    }
+
+    .status-warning {
+      color: var(--warning);
+      background: rgba(173, 104, 0, .14);
+    }
+
+    .status-danger {
+      color: var(--danger);
+      background: rgba(198, 40, 40, .13);
+    }
+
+    .status-info {
+      color: var(--info);
+      background: rgba(8, 126, 164, .13);
+    }
+
+    .status-neutral {
+      color: var(--muted);
+      background: var(--surface-alt);
+    }
+
+    .progress {
+      width: 120px;
+      height: 7px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--surface-alt);
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .bar-line {
+      display: grid;
+      grid-template-columns: 180px 1fr 45px;
+      align-items: center;
+      gap: 8px;
+      margin: 13px 0;
+    }
+
+    .bar-background {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--surface-alt);
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      background: var(--primary);
+    }
+
+    .bar-fill.success {
+      background: var(--success);
+    }
+
+    .bar-fill.warning {
+      background: var(--warning);
+    }
+
+    .bar-fill.danger {
+      background: var(--danger);
+    }
+
+    .bar-fill.info {
+      background: var(--info);
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      max-height: 340px;
+      overflow: auto;
+    }
+
+    .list-item {
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .list-item:hover {
+      border-color: var(--primary);
+    }
+
+    .list-item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .empty {
+      padding: 30px 15px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .notice {
+      padding: 12px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(8, 126, 164, .35);
+      border-radius: 8px;
+      color: var(--info);
+      background: rgba(8, 126, 164, .09);
+      line-height: 1.45;
+    }
+
+    .project-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .project-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .project-card p {
+      margin: 3px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .gantt-wrapper {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .gantt {
+      min-width: 1250px;
+    }
+
+    .gantt-header,
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+    }
+
+    .gantt-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gantt-task-header,
+    .gantt-task {
+      padding: 10px;
+      border-right: 1px solid var(--border);
+    }
+
+    .gantt-timeline {
+      position: relative;
+      min-width: 900px;
+      background-image: repeating-linear-gradient(
+        to right,
+        transparent 0,
+        transparent calc(100% / 12 - 1px),
+        var(--border) calc(100% / 12 - 1px),
+        var(--border) calc(100% / 12)
+      );
+    }
+
+    .gantt-periods {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      min-height: 42px;
+    }
+
+    .gantt-period {
+      padding: 8px 5px;
+      border-right: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .gantt-row {
+      min-height: 47px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gantt-row:hover {
+      background: rgba(37, 99, 235, .04);
+    }
+
+    .gantt-task {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .gantt-task.child {
+      padding-left: 28px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .gantt-task.pillar-title {
+      color: var(--primary);
+      background: var(--surface-alt);
+      font-weight: bold;
+    }
+
+    .gantt-bar-area {
+      position: relative;
+      min-width: 900px;
+      min-height: 46px;
+    }
+
+    .gantt-bar {
+      position: absolute;
+      top: 12px;
+      height: 22px;
+      min-width: 5px;
+      padding: 4px 8px;
+      overflow: hidden;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 10px;
+      line-height: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .gantt-bar:hover {
+      filter: brightness(.9);
+    }
+
+    .gantt-bar.success {
+      background: var(--success);
+    }
+
+    .gantt-bar.info {
+      background: var(--info);
+    }
+
+    .gantt-bar.warning {
+      background: var(--warning);
+    }
+
+    .gantt-bar.danger {
+      background: var(--danger);
+    }
+
+    .gantt-bar.neutral {
+      background: #738197;
+    }
+
+    .gantt-today {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e11d48;
+      pointer-events: none;
+    }
+
+    .gantt-original {
+      position: absolute;
+      top: 36px;
+      height: 3px;
+      border-radius: 3px;
+      background: #475569;
+      opacity: .8;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, .65);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(850px, 100%);
+      max-height: 94vh;
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--surface);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .3);
+    }
+
+    .modal-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .modal-heading h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .close {
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      font-size: 25px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 50;
+      padding: 12px 15px;
+      border-radius: 9px;
+      color: #fff;
+      background: #172033;
+      opacity: 0;
+      transform: translateY(60px);
+      transition: .25s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1250px) {
+      .metrics {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 850px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding: 12px;
+      }
+
+      .menu {
+        display: flex;
+        overflow-x: auto;
+      }
+
+      .menu button {
+        white-space: nowrap;
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+
+      .topbar {
+        display: block;
+        padding: 14px 16px;
+      }
+
+      .topbar select {
+        width: 100%;
+      }
+
+      .project-selector {
+        display: block;
+        margin-top: 12px;
+      }
+
+      .project-selector label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .content {
+        padding: 20px 15px 35px;
+      }
+
+      .page-heading {
+        display: block;
+      }
+
+      .page-heading .toolbar {
+        margin-top: 12px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .project-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-line {
+        grid-template-columns: 125px 1fr 35px;
+      }
+    }
+  
+    /* ===== A3 DO PROJETO ===== */
+    .a3-viewer {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-alt);
+      overflow: auto;
+      max-height: 72vh;
+      min-height: 220px;
+    }
+    .a3-viewer img {
+      display: block;
+      margin: 0 auto;
+      max-width: none;
+      height: auto;
+      background: #fff;
+      cursor: zoom-in;
+    }
+    .a3-drop {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 280px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      cursor: pointer;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      margin: 12px;
+    }
+    .a3-viewer.dragging .a3-drop,
+    .a3-drop:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .a3-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 22px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .a3-zoom {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .a3-zoom span {
+      min-width: 48px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .a3-preview {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .a3-preview img {
+      height: 84px;
+      width: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+    }
+    .a3-preview .a3-preview-text {
+      flex: 1;
+    }
+    .a3-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      background: rgba(8, 12, 22, 0.92);
+    }
+    .a3-lightbox.open {
+      display: flex;
+    }
+    .a3-lightbox-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .a3-lightbox-body {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+    }
+    .a3-lightbox-body img {
+      margin: auto;
+      max-width: 100%;
+      max-height: 100%;
+      cursor: zoom-in;
+      background: #fff;
+    }
+    .a3-lightbox-body.actual img {
+      max-width: none;
+      max-height: none;
+      cursor: zoom-out;
+    }
+  
+    /* ===== PÁGINA HOSPEDADA / COMPARTILHAMENTO ===== */
+    :root {
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    [hidden] {
+      display: none !important;
+    }
+    .sync-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--background);
+    }
+    .sync-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+      padding: 24px 32px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      color: var(--text);
+    }
+    .sync-box span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .sync-progress {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2500;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .ro-banner {
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 14px;
+      background: #fff4d6;
+      color: #6b4a00;
+      border-bottom: 1px solid #ecd9a3;
+    }
+    body.readonly #quickImportButton,
+    body.readonly #quickActivityButton,
+    body.readonly #createProjectButton,
+    body.readonly #excelInput,
+    body.readonly #restoreButton,
+    body.readonly #a3AttachButton,
+    body.readonly #a3RemoveButton,
+    body.readonly #a3Drop {
+      display: none !important;
+    }
+    .dlg-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 12, 22, 0.55);
+      padding: 16px;
+    }
+    .dlg {
+      max-width: 460px;
+      width: 100%;
+      padding: 22px;
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .dlg p {
+      margin: 0 0 18px;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+    .dlg-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">A</div>
+
+        <div>
+          <strong>ROAD MAP AEMCO</strong>
+          <small>Gestão integrada de projetos</small>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <button class="active" data-page="dashboard">
+          📊 Visão geral
+        </button>
+        <button data-page="a3">
+          📄 A3 do projeto
+        </button>
+
+        <button data-page="activities">
+          📋 Atividades
+        </button>
+
+        <button data-page="gantt">
+          📅 Gráfico de Gantt
+        </button>
+
+        <button data-page="pillars">
+          👥 Pilares e líderes
+        </button>
+
+        <button data-page="delays">
+          ⚠️ Atrasos e recuperação
+        </button>
+
+        <button data-page="data">
+          💾 Dados e exportação
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn" id="themeButton">
+          Alternar tema
+        </button>
+
+        <br><br>
+
+        <small class="muted">
+          <span id="storageNote">Dados armazenados neste navegador.</span>
+        </small>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="ro-banner" id="roBanner" hidden>
+        👁 Você tem acesso somente leitura: pode consultar, mas não alterar os dados.
+      </div>
+      <header class="topbar">
+        <div>
+          <h1 id="topTitle">Visão geral executiva</h1>
+          <p id="fileInfo">
+            Nenhum projeto selecionado.
+          </p>
+        </div>
+
+        <div class="project-selector">
+          <label for="projectSelector">
+            Projeto ativo
+          </label>
+
+          <select id="projectSelector">
+            <option value="">
+              Selecione um projeto
+            </option>
+          </select>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <section class="page active" id="page-dashboard">
+          <div class="page-heading">
+            <div>
+              <h2>Visão geral do projeto</h2>
+              <p>
+                Indicadores consolidados do projeto selecionado.
+              </p>
+            </div>
+
+            <div class="toolbar">
+              <button class="btn" id="quickImportButton">
+                📥 Importar roadmap
+              </button>
+
+              <button class="btn primary" id="quickActivityButton">
+                ＋ Nova atividade
+              </button>
+            </div>
+          </div>
+
+          <div id="a3Preview"></div>
+          <div class="metrics" id="metrics"></div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="panel-heading">
+                <h3>Distribuição por status</h3>
+                <span>Projeto atual</span>
+              </div>
+
+              <div id="statusSummary"></div>
+            </div>
+
+            <div class="card">
+              <div class="panel-heading">
+                <h3>Próximos vencimentos</h3>
+                <span>Próximos 14 dias</span>
+              </div>
+
+              <div class="list" id="upcomingList"></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="panel-heading">
+                <h3>Pilares do projeto</h3>
+                <span>Progresso médio</span>
+              </div>
+
+              <div id="pillarSummary"></div>
+            </div>
+
+            <div class="card">
+              <div class="panel-heading">
+                <h3>Atividades recentes</h3>
+                <span>Últimos registros alterados</span>
+              </div>
+
+              <div class="list" id="recentList"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="panel-heading">
+              <h3>Comparativo entre projetos</h3>
+              <span>Visão resumida dos até três projetos</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Projeto</th>
+                    <th>Atividades</th>
+                    <th>Progresso médio</th>
+                    <th>Concluídas</th>
+                    <th>Em andamento</th>
+                    <th>Atrasadas</th>
+                  </tr>
+                </thead>
+
+                <tbody id="projectsComparison"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-a3">
+          <div class="page-heading">
+            <div>
+              <h2>A3 do projeto</h2>
+              <p>
+                Base do projeto selecionado: imagem do A3 que contempla
+                todos os pilares.
+              </p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary" id="a3AttachButton">
+                📎 Anexar A3
+              </button>
+              <button class="btn" id="a3FullButton">
+                ⛶ Tela cheia
+              </button>
+              <button class="btn" id="a3DownloadButton">
+                ⬇ Baixar imagem
+              </button>
+              <button class="btn" id="a3RemoveButton">
+                🗑 Remover
+              </button>
+              <input
+                type="file"
+                id="a3Input"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+              >
+            </div>
+          </div>
+          <div class="card">
+            <div class="panel-heading">
+              <h3 id="a3Title">A3</h3>
+              <div class="a3-zoom" id="a3ZoomControls">
+                <button class="btn" id="a3ZoomOut" title="Diminuir">−</button>
+                <span id="a3ZoomLabel">100%</span>
+                <button class="btn" id="a3ZoomIn" title="Aumentar">＋</button>
+                <button class="btn" id="a3ZoomFit" title="Ajustar à largura">
+                  Ajustar
+                </button>
+              </div>
+            </div>
+            <div class="a3-viewer" id="a3Viewer"></div>
+            <div class="a3-meta" id="a3Meta"></div>
+          </div>
+          <div class="notice">
+            Dica: exporte o A3 em paisagem como PNG ou JPG (PDF não é aceito).
+            A imagem é otimizada automaticamente para caber no armazenamento
+            do navegador e passa a fazer parte do Backup JSON do projeto.
+          </div>
+        </section>
+        <section class="page" id="page-activities">
+          <div class="page-heading">
+            <div>
+              <h2>Atividades do projeto</h2>
+              <p>
+                Visualize e atualize o status de cada ação macro e tarefa.
+              </p>
+            </div>
+
+            <button class="btn primary" id="newActivityButton">
+              ＋ Nova atividade
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="filters">
+              <input
+                id="searchInput"
+                placeholder="Pesquisar código, descrição, pilar ou responsável..."
+              >
+
+              <select id="pillarFilter">
+                <option value="">Todos os pilares</option>
+              </select>
+
+              <select id="ownerFilter">
+                <option value="">Todos os responsáveis</option>
+              </select>
+
+              <select id="statusFilter">
+                <option value="">Todos os status</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Andamento">Andamento</option>
+                <option value="Não iniciado">Não iniciado</option>
+                <option value="Atrasado">Atrasado</option>
+                <option value="Rollout planejado">
+                  Rollout planejado
+                </option>
+              </select>
+
+              <select id="typeFilter">
+                <option value="">Todos os tipos</option>
+                <option value="Programado">
+                  Ação Macro
+                </option>
+                <option value="Tarefa">
+                  Tarefa
+                </option>
+              </select>
+
+              <button class="btn" id="clearFiltersButton">
+                Limpar
+              </button>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Atividade</th>
+                    <th>Pilar</th>
+                    <th>Responsável</th>
+                    <th>Início</th>
+                    <th>Término</th>
+                    <th>Status</th>
+                    <th>Progresso</th>
+                  </tr>
+                </thead>
+
+                <tbody id="activitiesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-gantt">
+          <div class="page-heading">
+            <div>
+              <h2>Gráfico de Gantt</h2>
+              <p>
+                Visão temporal das atividades do projeto selecionado.
+              </p>
+            </div>
+
+            <div class="toolbar">
+              <select id="ganttScale" style="width:auto">
+                <option value="year">
+                  Escala anual
+                </option>
+
+                <option value="quarter">
+                  Escala trimestral
+                </option>
+
+                <option value="month" selected>
+                  Escala mensal
+                </option>
+              </select>
+
+              <button class="btn" id="todayButton">
+                Ir para hoje
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="legend">
+              <div class="legend-item">
+                <span class="legend-color" style="background:#16803c"></span>
+                Concluído
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-color" style="background:#087ea4"></span>
+                Andamento
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-color" style="background:#ad6800"></span>
+                Não iniciado
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-color" style="background:#c62828"></span>
+                Atrasado
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-color" style="background:#475569"></span>
+                Prazo original
+              </div>
+            </div>
+
+            <div class="gantt-wrapper" id="ganttWrapper">
+              <div id="gantt"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-pillars">
+          <div class="page-heading">
+            <div>
+              <h2>Pilares e líderes</h2>
+              <p>
+                Clique em um pilar para filtrar suas atividades.
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pilar</th>
+                    <th>Líder</th>
+                    <th>Fase</th>
+                    <th>Atividades</th>
+                    <th>Progresso médio</th>
+                    <th>Atrasadas</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody id="pillarsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-delays">
+          <div class="page-heading">
+            <div>
+              <h2>Atrasos e recuperação</h2>
+              <p>
+                Atividades com status atrasado e seus planos de recuperação.
+              </p>
+            </div>
+
+            <div class="toolbar">
+              <label class="muted">
+                <input
+                  type="checkbox"
+                  id="onlyWithoutReason"
+                  style="width:auto"
+                >
+                Somente sem justificativa
+              </label>
+
+              <button class="btn" id="exportDelaysButton">
+                Exportar atrasadas
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="notice">
+              A situação “Concluído” e “Não iniciado” é preservada.
+              Uma atividade em andamento só é automaticamente apresentada
+              como atrasada quando seu prazo original ou replanejado venceu.
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Atividade</th>
+                    <th>Pilar</th>
+                    <th>Responsável</th>
+                    <th>Prazo</th>
+                    <th>Dias em atraso</th>
+                    <th>Justificativa</th>
+                    <th>Nova data</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody id="delaysTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-data">
+          <div class="page-heading">
+            <div>
+              <h2>Dados e exportação</h2>
+              <p>
+                Gerencie os três projetos e seus respectivos roadmaps.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>Importar roadmap</h3>
+
+              <p class="muted">
+                O arquivo será importado para o projeto atualmente selecionado.
+              </p>
+
+              <div class="notice">
+                Antes de importar, selecione o projeto desejado na lista
+                superior. Cada projeto mantém suas próprias atividades,
+                pilares, líderes e atualizações.
+              </div>
+
+              <input
+                type="file"
+                id="excelInput"
+                accept=".xlsx,.xls,.csv"
+              >
+            </div>
+
+            <div class="card">
+              <h3>Exportar dados do projeto ativo</h3>
+
+              <br>
+
+              <div class="toolbar">
+                <button class="btn primary" id="exportExcelButton">
+                  Exportar Excel
+                </button>
+
+                <button class="btn" id="exportCsvButton">
+                  Exportar CSV
+                </button>
+
+                <button class="btn" id="backupButton">
+                  Backup JSON
+                </button>
+
+                <button class="btn" id="restoreButton">
+                  Restaurar backup
+                </button>
+
+                <input
+                  type="file"
+                  id="jsonInput"
+                  accept=".json"
+                  hidden
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="panel-heading">
+              <h3>Projetos cadastrados</h3>
+              <span>Limite máximo: três projetos</span>
+            </div>
+
+            <div id="projectsList"></div>
+
+            <button class="btn primary" id="createProjectButton">
+              ＋ Criar projeto
+            </button>
+          </div>
+
+          <div class="card">
+            <h3>Informações do projeto ativo</h3>
+
+            <div id="projectInformation"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="sync-overlay" id="syncOverlay">
+    <div class="sync-box">
+      <strong>Roadmap AEMCO</strong>
+      <span>Conectando e carregando os dados…</span>
+    </div>
+  </div>
+  <div class="sync-progress" id="syncProgress" hidden></div>
+  <div class="dlg-backdrop" id="dlg" hidden>
+    <div class="dlg" role="dialog" aria-modal="true">
+      <p id="dlgText"></p>
+      <div class="dlg-actions">
+        <button class="btn" id="dlgCancel">Cancelar</button>
+        <button class="btn primary" id="dlgOk">OK</button>
+      </div>
+    </div>
+  </div>
+  <div class="a3-lightbox" id="a3Lightbox">
+    <div class="a3-lightbox-bar">
+      <span id="a3LightboxTitle"></span>
+      <span>
+        Clique na imagem para ampliar · ESC para fechar
+        <button class="btn" id="a3LightboxClose">Fechar ×</button>
+      </span>
+    </div>
+    <div class="a3-lightbox-body" id="a3LightboxBody">
+      <img id="a3LightboxImage" alt="A3 do projeto">
+    </div>
+  </div>
+  <div class="modal-backdrop" id="activityModal">
+    <div class="modal">
+      <div class="modal-heading">
+        <h2 id="activityModalTitle">
+          Editar atividade
+        </h2>
+
+        <button class="close" id="closeActivityModal">
+          ×
+        </button>
+      </div>
+
+      <form id="activityForm">
+        <input type="hidden" id="activityId">
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Pilar</label>
+            <input id="activityPillar" required>
+          </div>
+
+          <div class="field">
+            <label>Tipo</label>
+            <select id="activityType">
+              <option value="Programado">
+                Ação Macro
+              </option>
+
+              <option value="Tarefa">
+                Tarefa
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Código</label>
+            <input id="activityCode" required>
+          </div>
+
+          <div class="field">
+            <label>Responsável</label>
+            <input id="activityOwner">
+          </div>
+
+          <div class="field">
+            <label>Recurso necessário</label>
+            <input id="activityResource">
+          </div>
+
+          <div class="field">
+            <label>Status</label>
+            <select id="activityStatus">
+              <option value="Concluído">
+                Concluído
+              </option>
+
+              <option value="Andamento">
+                Andamento
+              </option>
+
+              <option value="Não iniciado">
+                Não iniciado
+              </option>
+
+              <option value="Atrasado">
+                Atrasado
+              </option>
+
+              <option value="Rollout planejado">
+                Rollout planejado
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Data de início</label>
+            <input type="date" id="activityStart">
+          </div>
+
+          <div class="field">
+            <label>Previsão de conclusão</label>
+            <input type="date" id="activityEnd">
+          </div>
+
+          <div class="field">
+            <label>Nova data de conclusão</label>
+            <input type="date" id="activityNewEnd">
+          </div>
+
+          <div class="field">
+            <label>Progresso (%)</label>
+            <input
+              type="number"
+              id="activityProgress"
+              min="0"
+              max="100"
+              step="1"
+            >
+          </div>
+
+          <div class="field full">
+            <label>Descrição</label>
+            <textarea
+              id="activityDescription"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+
+          <div class="field full">
+            <label>Justificativa</label>
+            <textarea
+              id="activityReason"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label>Responsável pela recuperação</label>
+            <input id="activityRecoveryOwner">
+          </div>
+
+          <div class="field full">
+            <label>Plano de recuperação</label>
+            <textarea
+              id="activityRecoveryPlan"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn danger"
+            id="deleteActivityButton"
+          >
+            Excluir
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            id="cancelActivityButton"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn primary"
+          >
+            Salvar alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="projectModal">
+    <div class="modal">
+      <div class="modal-heading">
+        <h2>Novo projeto</h2>
+
+        <button class="close" id="closeProjectModal">
+          ×
+        </button>
+      </div>
+
+      <form id="projectForm">
+        <div class="field">
+          <label>Nome do projeto</label>
+          <input id="newProjectName" required>
+        </div>
+
+        <br>
+
+        <div class="field">
+          <label>Líder principal</label>
+          <input id="newProjectLeader">
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn"
+            id="cancelProjectButton"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn primary"
+          >
+            Criar projeto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /*
+      ============================================================
+      ROADMAP AEMCO — ATÉ TRÊS PROJETOS
+      ============================================================
+
+      Cada projeto possui estrutura independente:
+
+      {
+        id,
+        name,
+        leader,
+        sourceFile,
+        importedAt,
+        activities,
+        sheets,
+        pillarMeta
+      }
+
+      O projeto ativo é controlado por projectSelector.
+      As atividades exibidas em todas as telas vêm exclusivamente
+      do projeto ativo.
+    */
+
+    const STORAGE_KEY =
+      "roadmap_aemco_tres_projetos_v1";
+
+    const DEFAULT_STATE = {
+      theme: (window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ? "dark"
+        : "light",
+      activeProjectId: "",
+      projects: []
+    };
+
+    let state = loadState();
+
+    function $(selector) {
+      return document.querySelector(selector);
+    }
+
+    function $$(selector) {
+      return [...document.querySelectorAll(selector)];
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function id() {
+      return "id_" +
+        Date.now() +
+        "_" +
+        Math.random().toString(16).slice(2);
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem(STORAGE_KEY)
+        );
+
+        if (!saved) {
+          return clone(DEFAULT_STATE);
+        }
+
+        return {
+          ...clone(DEFAULT_STATE),
+          ...saved,
+          projects: Array.isArray(saved.projects)
+            ? saved.projects
+            : []
+        };
+      } catch {
+        return clone(DEFAULT_STATE);
+      }
+    }
+
+        function saveStateLocal() {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(state)
+        );
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    /* =====================================================================
+       COMPARTILHAMENTO DE DADOS (banco da página publicada)
+       ---------------------------------------------------------------------
+       Em página publicada, os dados ficam no banco compartilhado (capacidade
+       "db") e todas as pessoas com acesso veem as mesmas atividades, em
+       tempo real. Fora dela (arquivo aberto no computador) a plataforma
+       volta ao modo local: dados só no navegador (localStorage).
+
+       Estrutura no banco:
+         projects/{projectId}                      -> dados do projeto (sem atividades)
+         projects/{projectId}/activities/{id}      -> uma atividade por documento
+       - O restante do código continua usando `state` e chamando saveState();
+         esta camada compara o `state` com o último conteúdo conhecido do
+         servidor e envia só o que mudou.
+       - Tema e projeto ativo são preferência de cada pessoa (localStorage).
+       - Imagem do A3: arquivo na capacidade "assets"; o projeto guarda só a
+         referência (/_blob/<id>). Somente Editores do artefato anexam A3.
+       ===================================================================== */
+    const PREFS_KEY = "roadmap_aemco_prefs_v1";
+
+    const Shared = {
+      mode: "connecting",              // connecting | shared | local
+      db: null,
+      assets: null,
+      downloads: null,
+      canWrite: true,                  // false = acesso somente leitura
+      ready: false,                    // primeira carga do servidor concluída
+      synced: { projects: {}, acts: {} }, // último conteúdo conhecido no servidor
+      remote: { projects: {}, acts: {} }, // o que o servidor entregou
+      loaded: new Set(),
+      unsubActs: {},
+      timer: null,
+      renderTimer: null,
+      running: false,
+      rerun: false,
+      failures: 0,
+      warnedA3: false
+    };
+    const remoteJson = new WeakMap(); // cache do JSON de documentos imutáveis
+
+    // --- Utilidades -------------------------------------------------------
+    // JSON com chaves ordenadas: permite comparar documentos de forma estável.
+    function stable(value) {
+      if (value === null || typeof value !== "object") {
+        return JSON.stringify(value);
+      }
+      if (Array.isArray(value)) {
+        return "[" + value.map(stable).join(",") + "]";
+      }
+      return "{" + Object.keys(value)
+        .filter(key => value[key] !== undefined)
+        .sort()
+        .map(key => JSON.stringify(key) + ":" + stable(value[key]))
+        .join(",") + "}";
+    }
+
+    function stableRemote(doc) {
+      let json = remoteJson.get(doc);
+      if (json === undefined) {
+        json = stable(doc);
+        remoteJson.set(doc, json);
+      }
+      return json;
+    }
+
+    function plain(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function projectDoc(project) {
+      const meta = {};
+      Object.keys(project).forEach(key => {
+        if (key !== "activities") {
+          meta[key] = project[key];
+        }
+      });
+      return meta;
+    }
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    function dataUrlToBlob(dataUrl) {
+      const [head, body] = dataUrl.split(",");
+      const mime = /data:([^;]+)/.exec(head)[1];
+      const binary = atob(body);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new Blob([bytes], { type: mime });
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // Salva um arquivo: pela capacidade "downloads" (página publicada) ou,
+    // fora dela, pelo método tradicional do navegador.
+    async function saveBlob(blob, filename) {
+      if (Shared.downloads) {
+        try {
+          await Shared.downloads.save({ filename, data: blob });
+        } catch (error) {
+          if (error && error.code !== "declined") {
+            showToast(
+              "Não foi possível salvar o arquivo (" +
+              (error.code || "erro") + ")."
+            );
+          }
+        }
+        return;
+      }
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function savePrefs() {
+      try {
+        localStorage.setItem(PREFS_KEY, JSON.stringify({
+          theme: state.theme,
+          activeProjectId: state.activeProjectId
+        }));
+      } catch {
+        // preferências são opcionais
+      }
+    }
+
+    function setStatus(kind) {
+      const note = $("#storageNote");
+      if (!note) {
+        return;
+      }
+      const time = new Date().toLocaleTimeString(
+        "pt-BR",
+        { hour: "2-digit", minute: "2-digit" }
+      );
+      note.textContent = {
+        connecting: "⏳ Conectando ao banco compartilhado…",
+        local: "💾 Modo local: dados só neste navegador.",
+        readonly: "👁 Somente leitura (dados compartilhados).",
+        pending: "🔄 Salvando…",
+        error: "⚠ Falha ao sincronizar. Tentando novamente…",
+        synced: "🟢 Compartilhado · salvo às " + time,
+        connected: "🟢 Compartilhado · conectado"
+      }[kind] || "";
+    }
+
+    function showSyncProgress(done, total) {
+      const box = $("#syncProgress");
+      if (!box) {
+        return;
+      }
+      box.hidden = done >= total;
+      box.textContent = "Sincronizando " + done + " de " + total + "…";
+    }
+
+    // --- Entrada em cada modo ---------------------------------------------
+    function hideOverlay() {
+      const overlay = $("#syncOverlay");
+      if (overlay) {
+        overlay.hidden = true;
+      }
+    }
+
+    function enterLocalMode() {
+      Shared.mode = "local";
+      hideOverlay();
+      setStatus("local");
+      renderAll();
+    }
+
+    function setReadOnly(value) {
+      Shared.canWrite = !value;
+      document.body.classList.toggle("readonly", value);
+      $("#roBanner").hidden = !value;
+    }
+
+    function enterSharedMode() {
+      Shared.mode = "shared";
+      try {
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "null");
+        if (prefs) {
+          state.theme = prefs.theme || state.theme;
+          state.activeProjectId = prefs.activeProjectId || "";
+        }
+      } catch {
+        // sem preferências salvas
+      }
+      state.projects = []; // os dados vêm do servidor
+      setReadOnly(!Shared.canWrite);
+      setStatus("connecting");
+      Shared.db.collection("projects")
+        .onSnapshot(onProjectsSnapshot, onDbError);
+      // Se o servidor demorar, abre com o que já chegou.
+      setTimeout(() => {
+        if (!Shared.ready) {
+          Shared.ready = true;
+          applyRemote(false);
+          finishLoading();
+        }
+      }, 8000);
+    }
+
+    function finishLoading() {
+      hideOverlay();
+      setStatus(Shared.canWrite ? "connected" : "readonly");
+      renderAll();
+    }
+
+    async function connectShared() {
+      const use = name =>
+        window.claude && typeof window.claude.use === "function"
+          ? Promise.race([
+              window.claude.use(name).catch(() => null),
+              sleep(12000).then(() => null)
+            ])
+          : Promise.resolve(null);
+      try {
+        const [db, user, assets, downloads] = await Promise.all([
+          use("db"), use("user"), use("assets"), use("downloads")
+        ]);
+        Shared.assets = assets;
+        Shared.downloads = downloads;
+        if (!db) {
+          enterLocalMode();
+          return;
+        }
+        Shared.db = db;
+        if (user && typeof user.can === "function") {
+          try {
+            if (await user.can("data.write") === false) {
+              Shared.canWrite = false;
+            }
+          } catch {
+            // sem resposta: deixa uma gravação recusada decidir
+          }
+        }
+        enterSharedMode();
+      } catch {
+        enterLocalMode();
+      }
+    }
+
+    // --- Servidor -> tela -------------------------------------------------
+    function onDbError(error) {
+      if (error && error.code === "revoked") {
+        setReadOnly(true);
+        setStatus("readonly");
+      } else {
+        setStatus("error");
+      }
+    }
+
+    function onProjectsSnapshot(snapshot) {
+      const ids = new Set();
+      snapshot.docs.forEach(doc => {
+        ids.add(doc.id);
+        Shared.remote.projects[doc.id] = doc.data();
+      });
+      Object.keys(Shared.remote.projects).forEach(id => {
+        if (ids.has(id)) {
+          return;
+        }
+        delete Shared.remote.projects[id];
+        delete Shared.remote.acts[id];
+        Shared.loaded.delete("acts:" + id);
+        if (Shared.unsubActs[id]) {
+          Shared.unsubActs[id]();
+          delete Shared.unsubActs[id];
+        }
+      });
+      ids.forEach(id => {
+        if (!Shared.unsubActs[id]) {
+          subscribeActivities(id);
+        }
+      });
+      if (!snapshot.metadata.fromCache) {
+        Shared.loaded.add("projects");
+      }
+      applyRemote(false);
+    }
+
+    function subscribeActivities(projectId) {
+      Shared.unsubActs[projectId] = Shared.db
+        .collection("projects/" + projectId + "/activities")
+        .onSnapshot(snapshot => {
+          const map = {};
+          snapshot.docs.forEach(doc => {
+            map[doc.id] = doc.data();
+          });
+          Shared.remote.acts[projectId] = map;
+          if (!snapshot.metadata.fromCache) {
+            Shared.loaded.add("acts:" + projectId);
+          }
+          applyRemote(false);
+        }, onDbError);
+    }
+
+    /*
+      Junta o que veio do servidor com o `state`. Edições locais ainda não
+      enviadas são preservadas (a menos que force = true, usado quando a
+      gravação foi recusada). O que mudou de fato dispara um novo desenho.
+    */
+    function applyRemote(force) {
+      if (Shared.mode !== "shared") {
+        return;
+      }
+      let firstLoad = false;
+      if (!Shared.ready) {
+        const ready = Shared.loaded.has("projects") &&
+          Object.keys(Shared.remote.projects)
+            .every(id => Shared.loaded.has("acts:" + id));
+        if (!ready) {
+          return;
+        }
+        Shared.ready = true;
+        firstLoad = true;
+      }
+      let changed = false;
+      const localProjects = {};
+      state.projects.forEach(project => {
+        localProjects[project.id] = project;
+      });
+      const next = [];
+      Object.keys(Shared.remote.projects).forEach(id => {
+        const remoteMeta = Shared.remote.projects[id];
+        const remoteSerialized = stableRemote(remoteMeta);
+        const local = localProjects[id];
+        const pendingMeta = !force && local &&
+          stable(projectDoc(local)) !== Shared.synced.projects[id];
+        let project;
+        if (pendingMeta) {
+          project = local;
+        } else {
+          project = {
+            ...plain(remoteMeta),
+            activities: local ? local.activities : []
+          };
+          Shared.synced.projects[id] = remoteSerialized;
+          if (!local || stable(projectDoc(local)) !== remoteSerialized) {
+            changed = true;
+          }
+        }
+        const remoteActs = Shared.remote.acts[id];
+        if (remoteActs) {
+          const known = Shared.synced.acts[id] ||
+            (Shared.synced.acts[id] = {});
+          const localActs = {};
+          (project.activities || []).forEach(activity => {
+            localActs[activity.id] = activity;
+          });
+          const merged = [];
+          Object.keys(remoteActs).forEach(activityId => {
+            const remoteDoc = remoteActs[activityId];
+            const serialized = stableRemote(remoteDoc);
+            const localAct = localActs[activityId];
+            if (localAct && !force &&
+                stable(localAct) !== known[activityId]) {
+              merged.push(localAct); // edição local pendente
+              return;
+            }
+            known[activityId] = serialized;
+            if (localAct && stable(localAct) === serialized) {
+              merged.push(localAct);
+            } else {
+              changed = true;
+              merged.push(plain(remoteDoc));
+            }
+          });
+          Object.keys(localActs).forEach(activityId => {
+            if (remoteActs[activityId] !== undefined) {
+              return;
+            }
+            const localAct = localActs[activityId];
+            if (known[activityId] === undefined ||
+                (!force && stable(localAct) !== known[activityId])) {
+              merged.push(localAct); // nova ou editada, ainda não enviada
+            } else {
+              delete known[activityId]; // removida por outra pessoa
+              changed = true;
+            }
+          });
+          merged.sort((a, b) => (a.seq ?? 1e9) - (b.seq ?? 1e9));
+          project.activities = merged;
+        }
+        next.push(project);
+      });
+      state.projects.forEach(local => {
+        if (Shared.remote.projects[local.id]) {
+          return;
+        }
+        if (Shared.synced.projects[local.id] === undefined && !force) {
+          next.push(local); // projeto novo, ainda não enviado
+        } else {
+          delete Shared.synced.projects[local.id];
+          delete Shared.synced.acts[local.id];
+          changed = true; // removido por outra pessoa
+        }
+      });
+      next.sort((a, b) => (a.seq ?? 1e9) - (b.seq ?? 1e9));
+      state.projects = next;
+      if (!next.some(project => project.id === state.activeProjectId)) {
+        state.activeProjectId = next[0]?.id || "";
+      }
+      if (firstLoad) {
+        finishLoading();
+      } else if (changed) {
+        clearTimeout(Shared.renderTimer);
+        Shared.renderTimer = setTimeout(renderAll, 120);
+      }
+    }
+
+    // --- Tela -> servidor -------------------------------------------------
+    // Há algo no `state` diferente do servidor?
+    function hasPendingData() {
+      const localIds = new Set();
+      for (const project of state.projects) {
+        localIds.add(project.id);
+        if (stable(projectDoc(project)) !==
+            Shared.synced.projects[project.id]) {
+          return true;
+        }
+        const known = Shared.synced.acts[project.id] || {};
+        const ids = new Set();
+        for (const activity of project.activities) {
+          ids.add(activity.id);
+          if (stable(activity) !== known[activity.id]) {
+            return true;
+          }
+        }
+        if (Object.keys(known).some(id => !ids.has(id))) {
+          return true;
+        }
+      }
+      return Object.keys(Shared.synced.projects)
+        .some(id => !localIds.has(id));
+    }
+
+    function persist() {
+      if (Shared.mode !== "shared") {
+        return saveStateLocal();
+      }
+      savePrefs();
+      if (!Shared.canWrite) {
+        if (hasPendingData()) {
+          showToast(
+            "Você tem acesso somente leitura: a alteração não foi salva."
+          );
+          applyRemote(true);
+          renderAll();
+          return false;
+        }
+        return true;
+      }
+      scheduleSync();
+      return true;
+    }
+
+    function scheduleSync() {
+      clearTimeout(Shared.timer);
+      Shared.timer = setTimeout(runSync, 400);
+    }
+
+    async function runSync() {
+      if (Shared.running) {
+        Shared.rerun = true;
+        return;
+      }
+      Shared.running = true;
+      try {
+        do {
+          Shared.rerun = false;
+          await syncOnce();
+        } while (Shared.rerun);
+        Shared.failures = 0;
+        setStatus(Shared.canWrite ? "synced" : "readonly");
+      } catch (error) {
+        handleSyncError(error);
+      } finally {
+        Shared.running = false;
+      }
+    }
+
+    // Sobe o A3 (data URL, vindo de backup ou do envio) para os assets.
+    async function ensureA3Uploaded(project) {
+      const a3 = project.a3;
+      if (!a3 || !a3.image || !a3.image.startsWith("data:")) {
+        return;
+      }
+      if (!Shared.assets) {
+        delete project.a3;
+        if (!Shared.warnedA3) {
+          Shared.warnedA3 = true;
+          alert(
+            "O A3 não foi enviado: somente Editores do artefato podem " +
+            "anexar imagens. O restante dos dados foi sincronizado."
+          );
+        }
+        return;
+      }
+      const upload = await Shared.assets.upload(dataUrlToBlob(a3.image));
+      project.a3 = {
+        ...a3,
+        image: "/_blob/" + upload.id,
+        assetId: upload.id,
+        bytes: upload.sizeBytes
+      };
+    }
+
+    async function syncOnce() {
+      if (!Shared.ready) {
+        return;
+      }
+      setStatus("pending");
+      const operations = [];
+      const projectIds = new Set();
+      for (let index = 0; index < state.projects.length; index++) {
+        const project = state.projects[index];
+        projectIds.add(project.id);
+        project.seq = index;
+        await ensureA3Uploaded(project);
+        const meta = projectDoc(project);
+        const serialized = stable(meta);
+        const projectPath = "projects/" + project.id;
+        if (Shared.synced.projects[project.id] !== serialized) {
+          operations.push({
+            path: projectPath,
+            data: meta,
+            done: () => { Shared.synced.projects[project.id] = serialized; }
+          });
+        }
+        const known = Shared.synced.acts[project.id] ||
+          (Shared.synced.acts[project.id] = {});
+        const activityIds = new Set();
+        project.activities.forEach((activity, position) => {
+          activityIds.add(activity.id);
+          activity.seq = position;
+          const activitySerialized = stable(activity);
+          if (known[activity.id] !== activitySerialized) {
+            operations.push({
+              path: projectPath + "/activities/" + activity.id,
+              data: activity,
+              done: () => { known[activity.id] = activitySerialized; }
+            });
+          }
+        });
+        Object.keys(known).forEach(activityId => {
+          if (!activityIds.has(activityId)) {
+            operations.push({
+              path: projectPath + "/activities/" + activityId,
+              remove: true,
+              done: () => { delete known[activityId]; }
+            });
+          }
+        });
+      }
+      Object.keys(Shared.synced.projects).forEach(projectId => {
+        if (projectIds.has(projectId)) {
+          return;
+        }
+        const known = Shared.synced.acts[projectId] || {};
+        Object.keys(known).forEach(activityId => {
+          operations.push({
+            path: "projects/" + projectId + "/activities/" + activityId,
+            remove: true,
+            done: () => { delete known[activityId]; }
+          });
+        });
+        operations.push({
+          path: "projects/" + projectId,
+          remove: true,
+          done: () => {
+            delete Shared.synced.projects[projectId];
+            delete Shared.synced.acts[projectId];
+          }
+        });
+      });
+      await runOperations(operations);
+    }
+
+    async function writeWithRetry(operation) {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const ref = Shared.db.doc(operation.path);
+          if (operation.remove) {
+            await ref.delete();
+          } else {
+            await ref.set(plain(operation.data));
+          }
+          return;
+        } catch (error) {
+          const transient = error &&
+            (error.code === "unavailable" ||
+             error.code === "resource_exhausted");
+          if (transient && attempt < 3) {
+            await sleep(400 * (attempt + 1) + Math.random() * 300);
+            continue;
+          }
+          throw error;
+        }
+      }
+    }
+
+    // Executa as gravações com no máximo 4 em paralelo.
+    async function runOperations(operations) {
+      if (!operations.length) {
+        return;
+      }
+      let next = 0;
+      let done = 0;
+      let failure = null;
+      const total = operations.length;
+      const worker = async () => {
+        while (next < operations.length && !failure) {
+          const operation = operations[next++];
+          try {
+            await writeWithRetry(operation);
+            operation.done();
+            done++;
+            if (total > 20) {
+              showSyncProgress(done, total);
+            }
+          } catch (error) {
+            failure = error;
+          }
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(4, total) }, worker)
+      );
+      showSyncProgress(total, total);
+      if (failure) {
+        throw failure;
+      }
+    }
+
+    function handleSyncError(error) {
+      const code = error && error.code;
+      const message = (error && error.message) || "";
+      if (code === "quota_exceeded") {
+        setStatus("error");
+        alert(
+          "O limite de armazenamento do banco compartilhado foi atingido:\n\n" +
+          message
+        );
+      } else if (code === "invalid_argument" &&
+                 /256|size|large|deep|body/i.test(message)) {
+        setStatus("error");
+        alert("Um registro excede o tamanho permitido:\n\n" + message);
+      } else if (code === "invalid_argument" || code === "revoked") {
+        setReadOnly(true);
+        setStatus("readonly");
+        applyRemote(true);
+        renderAll();
+        alert(
+          "Você não tem permissão para editar estes dados. " +
+          "As alterações não salvas foram descartadas."
+        );
+      } else {
+        Shared.failures++;
+        setStatus("error");
+        if (Shared.failures <= 3) {
+          setTimeout(scheduleSync, 4000 * Shared.failures);
+        } else {
+          alert(
+            "Não foi possível sincronizar com o servidor. As últimas " +
+            "alterações podem não ter sido salvas. Faça um Backup JSON " +
+            "e recarregue a página."
+          );
+        }
+      }
+    }
+
+    function saveState() {
+      return persist();
+    }
+
+    /* =====================================================================
+       DIÁLOGOS PRÓPRIOS
+       Páginas hospedadas podem bloquear alert()/confirm() do navegador.
+       Estes diálogos não bloqueiam a página: use `await askConfirm(texto)`.
+       ===================================================================== */
+    let dialogQueue = Promise.resolve();
+
+    function showDialog(message, isConfirm) {
+      const run = () => new Promise(resolve => {
+        const box = $("#dlg");
+        $("#dlgText").textContent = message;
+        $("#dlgCancel").hidden = !isConfirm;
+        box.hidden = false;
+        const finish = value => {
+          box.hidden = true;
+          $("#dlgOk").onclick = null;
+          $("#dlgCancel").onclick = null;
+          resolve(value);
+        };
+        $("#dlgOk").onclick = () => finish(true);
+        $("#dlgCancel").onclick = () => finish(false);
+        $("#dlgOk").focus();
+      });
+      const result = dialogQueue.then(run);
+      dialogQueue = result.catch(() => {});
+      return result;
+    }
+
+    function askConfirm(message) {
+      return showDialog(message, true);
+    }
+
+    window.alert = message => {
+      showDialog(String(message), false);
+    };
+
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(
+        /[&<>"']/g,
+        character => ({
+          "&": "&",
+          "<": "<",
+          ">": ">",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[character])
+      );
+    }
+
+    function normalize(value) {
+      return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function activeProject() {
+      return state.projects.find(
+        project =>
+          project.id === state.activeProjectId
+      ) || null;
+    }
+
+    function activeActivities() {
+      return activeProject()?.activities || [];
+    }
+
+    function parseDate(value) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return null;
+      }
+
+      if (
+        Object.prototype.toString.call(value) ===
+        "[object Date]"
+      ) {
+        return isNaN(value.getTime())
+          ? null
+          : value;
+      }
+
+      if (typeof value === "number") {
+        if (value > 20000 && value < 80000) {
+          const date = new Date(
+            Math.round(
+              (value - 25569) * 86400 * 1000
+            )
+          );
+
+          return isNaN(date.getTime())
+            ? null
+            : date;
+        }
+
+        return null;
+      }
+
+      const text = String(value).trim();
+
+      const br = text.match(
+        /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/
+      );
+
+      if (br) {
+        return new Date(Date.UTC(
+          Number(br[3]),
+          Number(br[2]) - 1,
+          Number(br[1])
+        ));
+      }
+
+      const iso = text.match(
+        /^(\d{4})-(\d{2})-(\d{2})$/
+      );
+
+      if (iso) {
+        return new Date(Date.UTC(
+          Number(iso[1]),
+          Number(iso[2]) - 1,
+          Number(iso[3])
+        ));
+      }
+
+      const parsed = new Date(text);
+
+      return isNaN(parsed.getTime())
+        ? null
+        : parsed;
+    }
+
+    function dateKey(value) {
+      const date = parseDate(value);
+
+      if (!date) {
+        return "";
+      }
+
+      return [
+        date.getUTCFullYear(),
+        String(date.getUTCMonth() + 1)
+          .padStart(2, "0"),
+        String(date.getUTCDate())
+          .padStart(2, "0")
+      ].join("-");
+    }
+
+    function formatDate(value) {
+      const date = parseDate(value);
+
+      if (!date) {
+        return "—";
+      }
+
+      return new Intl.DateTimeFormat(
+        "pt-BR",
+        {
+          timeZone: "UTC",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        }
+      ).format(date);
+    }
+
+    function currentDateKey() {
+      const now = new Date();
+
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function daysLate(value) {
+      const key = dateKey(value);
+
+      if (!key) {
+        return 0;
+      }
+
+      const deadline = new Date(
+        `${key}T00:00:00`
+      );
+
+      const today = new Date(
+        `${currentDateKey()}T00:00:00`
+      );
+
+      return Math.max(
+        0,
+        Math.floor(
+          (today - deadline) / 86400000
+        )
+      );
+    }
+
+    function excelDate(value) {
+      return dateKey(value) || String(value ?? "").trim();
+    }
+
+    function progressValue(value) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return 0;
+      }
+
+      let number = Number(
+        String(value)
+          .replace("%", "")
+          .replace(",", ".")
+          .trim()
+      );
+
+      if (isNaN(number)) {
+        return 0;
+      }
+
+      if (number > 0 && number <= 1) {
+        number *= 100;
+      }
+
+      return Math.max(
+        0,
+        Math.min(100, Math.round(number))
+      );
+    }
+
+    function normalizeStatus(value) {
+      const text = normalize(value);
+
+      if (
+        text === "concluido" ||
+        text === "concluida" ||
+        text === "finalizado" ||
+        text === "finalizada"
+      ) {
+        return "Concluído";
+      }
+
+      if (
+        text === "andamento" ||
+        text === "emandamento" ||
+        text === "execucao"
+      ) {
+        return "Andamento";
+      }
+
+      if (
+        text === "naoiniciado" ||
+        text === "naoiniciada" ||
+        text === "planejado" ||
+        text === "planejada"
+      ) {
+        return "Não iniciado";
+      }
+
+      if (
+        text === "atrasado" ||
+        text === "atrasada"
+      ) {
+        return "Atrasado";
+      }
+
+      if (
+        text === "rollout" ||
+        text === "rolloutplanejado"
+      ) {
+        return "Rollout planejado";
+      }
+
+      return "";
+    }
+
+    /*
+      Regra de situação:
+
+      - Concluído nunca vira atraso.
+      - Não iniciado nunca vira atraso.
+      - Rollout planejado nunca vira atraso automático.
+      - Atrasado informado pela planilha é preservado.
+      - Andamento com prazo vencido vira Atrasado.
+      - Status vazio é determinado pelo progresso e pelo prazo.
+    */
+    function effectiveStatus(activity) {
+      const original =
+        normalizeStatus(activity.status);
+
+      if (original === "Concluído") {
+        return "Concluído";
+      }
+
+      if (original === "Não iniciado") {
+        return "Não iniciado";
+      }
+
+      if (original === "Rollout planejado") {
+        return "Rollout planejado";
+      }
+
+      if (original === "Atrasado") {
+        // Sem prazo definido não existe atraso (no Excel, TODAY() > célula vazia
+        // retorna "Atrasado" por engano nas linhas macro sem data).
+        return (activity.newEnd || activity.end)
+          ? "Atrasado"
+          : "Não iniciado";
+      }
+
+      const deadline =
+        activity.newEnd || activity.end;
+
+      if (
+        original === "Andamento" &&
+        daysLate(deadline) > 0
+      ) {
+        return "Atrasado";
+      }
+
+      if (!original) {
+        if (
+          progressValue(activity.progress) > 0 &&
+          daysLate(deadline) > 0
+        ) {
+          return "Atrasado";
+        }
+
+        if (
+          progressValue(activity.progress) > 0
+        ) {
+          return "Andamento";
+        }
+
+        return "Não iniciado";
+      }
+
+      return original;
+    }
+
+    function statusClass(status) {
+      const value = normalizeStatus(status);
+
+      if (value === "Concluído") {
+        return "status-success";
+      }
+
+      if (value === "Andamento") {
+        return "status-info";
+      }
+
+      if (value === "Atrasado") {
+        return "status-danger";
+      }
+
+      if (value === "Rollout planejado") {
+        return "status-warning";
+      }
+
+      return "status-neutral";
+    }
+
+    function statusBadge(status) {
+      return `
+        <span class="status ${statusClass(status)}">
+          ${escapeHtml(status)}
+        </span>
+      `;
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2800);
+    }
+
+    function setTheme() {
+      document.body.classList.toggle(
+        "dark",
+        state.theme === "dark"
+      );
+
+      $("#themeButton").textContent =
+        state.theme === "dark"
+          ? "Usar tema claro"
+          : "Alternar tema escuro";
+    }
+
+    function goToPage(page) {
+      $$(".menu button").forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.page === page
+        );
+      });
+
+      $$(".page").forEach(section => {
+        section.classList.toggle(
+          "active",
+          section.id === `page-${page}`
+        );
+      });
+
+      const titles = {
+        dashboard: "Visão geral executiva",
+        a3: "A3 do projeto",
+        activities: "Atividades do projeto",
+        gantt: "Gráfico de Gantt",
+        pillars: "Pilares e líderes",
+        delays: "Atrasos e recuperação",
+        data: "Dados e exportação"
+      };
+
+      $("#topTitle").textContent =
+        titles[page] || "Roadmap AEMCO";
+
+      renderAll();
+    }
+
+    function updateProjectSelector() {
+      const selector =
+        $("#projectSelector");
+
+      selector.innerHTML =
+        `<option value="">
+          Selecione um projeto
+        </option>` +
+        state.projects.map(project => `
+          <option value="${escapeHtml(project.id)}">
+            ${escapeHtml(project.name)}
+          </option>
+        `).join("");
+
+      selector.value =
+        state.activeProjectId;
+    }
+
+    function updateHeader() {
+      const project = activeProject();
+
+      $("#fileInfo").textContent = project
+        ? `${project.name} · ${project.activities.length} atividades · ${project.sourceFile || "sem arquivo importado"}`
+        : "Nenhum projeto selecionado.";
+    }
+
+    function renderAll() {
+      updateProjectSelector();
+      updateHeader();
+      renderDashboard();
+      renderFilters();
+      renderActivities();
+      renderGantt();
+      renderPillars();
+      renderDelays();
+      renderProjects();
+      renderProjectInformation();
+      renderA3();
+      setTheme();
+    }
+
+    function renderDashboard() {
+      const project = activeProject();
+
+      if (!project) {
+        $("#metrics").innerHTML = `
+          <div class="card" style="grid-column:1/-1">
+            <div class="empty">
+              Selecione ou crie um projeto para começar.
+            </div>
+          </div>
+        `;
+
+        [
+          "statusSummary",
+          "upcomingList",
+          "pillarSummary",
+          "recentList"
+        ].forEach(id => {
+          $("#" + id).innerHTML =
+            `<div class="empty">
+              Nenhum projeto selecionado.
+            </div>`;
+        });
+
+        $("#projectsComparison").innerHTML =
+          `<tr>
+            <td colspan="6">
+              <div class="empty">
+                Nenhum projeto cadastrado.
+              </div>
+            </td>
+          </tr>`;
+
+        return;
+      }
+
+      const list = project.activities;
+      const total = list.length;
+
+      const completed = list.filter(item =>
+        effectiveStatus(item) === "Concluído"
+      ).length;
+
+      const progress = total
+        ? Math.round(
+            list.reduce(
+              (sum, item) =>
+                sum + progressValue(item.progress),
+              0
+            ) / total
+          )
+        : 0;
+
+      const inProgress = list.filter(item =>
+        effectiveStatus(item) === "Andamento"
+      ).length;
+
+      const delayed = list.filter(item =>
+        effectiveStatus(item) === "Atrasado"
+      ).length;
+
+      const pillars = new Set(
+        list
+          .map(item => item.pillar)
+          .filter(Boolean)
+      ).size;
+
+      const metrics = [
+        ["Atividades", total, "Neste projeto"],
+        ["Progresso médio", `${progress}%`, "Média geral"],
+        ["Concluídas", completed, "Status concluído"],
+        ["Em andamento", inProgress, "Status em andamento"],
+        ["Atrasadas", delayed, "Exigem tratamento"],
+        ["Pilares", pillars, "Abas identificadas"]
+      ];
+
+      $("#metrics").innerHTML =
+        metrics.map(item => `
+          <div class="metric">
+            <div class="metric-label">
+              ${item[0]}
+            </div>
+
+            <div class="metric-value">
+              ${item[1]}
+            </div>
+
+            <div class="metric-help">
+              ${item[2]}
+            </div>
+          </div>
+        `).join("");
+
+      const statuses = [
+        "Concluído",
+        "Andamento",
+        "Não iniciado",
+        "Atrasado",
+        "Rollout planejado"
+      ];
+
+      $("#statusSummary").innerHTML =
+        statuses.map(status => {
+          const count = list.filter(item =>
+            effectiveStatus(item) === status
+          ).length;
+
+          const percent = total
+            ? Math.round((count / total) * 100)
+            : 0;
+
+          const color =
+            statusClass(status)
+              .replace("status-", "");
+
+          return `
+            <div class="bar-line">
+              <span>${status}</span>
+
+              <div class="bar-background">
+                <div
+                  class="bar-fill ${color}"
+                  style="width:${percent}%"
+                ></div>
+              </div>
+
+              <strong>${count}</strong>
+            </div>
+          `;
+        }).join("");
+
+      const upcoming = list
+        .filter(item => {
+          const end = parseDate(
+            item.newEnd || item.end
+          );
+
+          const status =
+            effectiveStatus(item);
+
+          if (!end || status === "Concluído") {
+            return false;
+          }
+
+          const distance = Math.floor(
+            (
+              end -
+              new Date(`${currentDateKey()}T00:00:00`)
+            ) / 86400000
+          );
+
+          return distance >= 0 && distance <= 14;
+        })
+        .sort((a, b) => {
+          return parseDate(
+            a.newEnd || a.end
+          ) - parseDate(
+            b.newEnd || b.end
+          );
+        })
+        .slice(0, 10);
+
+      $("#upcomingList").innerHTML =
+        upcoming.length
+          ? upcoming.map(item => `
+            <div
+              class="list-item"
+              data-open-activity="${escapeHtml(item.id)}"
+            >
+              <strong>
+                ${escapeHtml(item.code)}
+                — ${escapeHtml(item.description)}
+              </strong>
+
+              <span class="muted">
+                ${escapeHtml(item.pillar)}
+                · ${formatDate(item.newEnd || item.end)}
+              </span>
+            </div>
+          `).join("")
+          : `
+            <div class="empty">
+              Nenhum vencimento nos próximos 14 dias.
+            </div>
+          `;
+
+      $$("[data-open-activity]").forEach(element => {
+        element.addEventListener("click", () => {
+          openActivity(
+            element.dataset.openActivity
+          );
+        });
+      });
+
+      const pillarNames = [
+        ...new Set(
+          list.map(item => item.pillar)
+        )
+      ].filter(Boolean).sort();
+
+      $("#pillarSummary").innerHTML =
+        pillarNames.length
+          ? pillarNames.map(pillar => {
+              const items = list.filter(item =>
+                item.pillar === pillar
+              );
+
+              const average = items.length
+                ? Math.round(
+                    items.reduce(
+                      (sum, item) =>
+                        sum + progressValue(
+                          item.progress
+                        ),
+                      0
+                    ) / items.length
+                  )
+                : 0;
+
+              const delayedPillar =
+                items.filter(item =>
+                  effectiveStatus(item) ===
+                  "Atrasado"
+                ).length;
+
+              return `
+                <div class="bar-line">
+                  <span>${escapeHtml(pillar)}</span>
+
+                  <div class="bar-background">
+                    <div
+                      class="bar-fill ${
+                        delayedPillar
+                          ? "warning"
+                          : "success"
+                      }"
+                      style="width:${average}%"
+                    ></div>
+                  </div>
+
+                  <strong>${average}%</strong>
+                </div>
+              `;
+            }).join("")
+          : `
+            <div class="empty">
+              Nenhum pilar identificado.
+            </div>
+          `;
+
+      const recent = [...list]
+        .sort((a, b) => {
+          return new Date(
+            b.updatedAt || 0
+          ) - new Date(
+            a.updatedAt || 0
+          );
+        })
+        .slice(0, 8);
+
+      $("#recentList").innerHTML =
+        recent.length
+          ? recent.map(item => `
+            <div
+              class="list-item"
+              data-open-activity="${escapeHtml(item.id)}"
+            >
+              <strong>
+                ${escapeHtml(item.code)}
+                — ${escapeHtml(item.description)}
+              </strong>
+
+              <span class="muted">
+                ${escapeHtml(item.owner || "Sem responsável")}
+                · ${statusBadge(effectiveStatus(item))}
+              </span>
+            </div>
+          `).join("")
+          : `
+            <div class="empty">
+              Nenhuma atividade registrada.
+            </div>
+          `;
+
+      $$("[data-open-activity]").forEach(element => {
+        element.addEventListener("click", () => {
+          openActivity(
+            element.dataset.openActivity
+          );
+        });
+      });
+
+      renderProjectComparison();
+    }
+
+    function renderProjectComparison() {
+      const projects = state.projects;
+
+      $("#projectsComparison").innerHTML =
+        projects.length
+          ? projects.map(project => {
+              const list = project.activities;
+              const total = list.length;
+
+              const completed = list.filter(item =>
+                effectiveStatus(item) === "Concluído"
+              ).length;
+
+              const inProgress = list.filter(item =>
+                effectiveStatus(item) === "Andamento"
+              ).length;
+
+              const delayed = list.filter(item =>
+                effectiveStatus(item) === "Atrasado"
+              ).length;
+
+              const average = total
+                ? Math.round(
+                    list.reduce(
+                      (sum, item) =>
+                        sum + progressValue(
+                          item.progress
+                        ),
+                      0
+                    ) / total
+                  )
+                : 0;
+
+              return `
+                <tr>
+                  <td>
+                    <strong>
+                      ${escapeHtml(project.name)}
+                    </strong>
+                  </td>
+
+                  <td>${total}</td>
+                  <td>${average}%</td>
+                  <td>${completed}</td>
+                  <td>${inProgress}</td>
+                  <td>${delayed}</td>
+                </tr>
+              `;
+            }).join("")
+          : `
+            <tr>
+              <td colspan="6">
+                <div class="empty">
+                  Nenhum projeto cadastrado.
+                </div>
+              </td>
+            </tr>
+          `;
+    }
+
+    function renderFilters() {
+      const list = activeActivities();
+
+      const oldPillar =
+        $("#pillarFilter").value;
+
+      const oldOwner =
+        $("#ownerFilter").value;
+
+      const pillars = [
+        ...new Set(
+          list.map(item => item.pillar)
+        )
+      ].filter(Boolean).sort();
+
+      const owners = [
+        ...new Set(
+          list.map(item => item.owner)
+        )
+      ].filter(Boolean).sort();
+
+      $("#pillarFilter").innerHTML =
+        `<option value="">
+          Todos os pilares
+        </option>` +
+        pillars.map(value => `
+          <option value="${escapeHtml(value)}">
+            ${escapeHtml(value)}
+          </option>
+        `).join("");
+
+      $("#ownerFilter").innerHTML =
+        `<option value="">
+          Todos os responsáveis
+        </option>` +
+        owners.map(value => `
+          <option value="${escapeHtml(value)}">
+            ${escapeHtml(value)}
+          </option>
+        `).join("");
+
+      $("#pillarFilter").value = oldPillar;
+      $("#ownerFilter").value = oldOwner;
+    }
+
+    function filteredActivities() {
+      const search =
+        $("#searchInput").value.toLowerCase();
+
+      const pillar =
+        $("#pillarFilter").value;
+
+      const owner =
+        $("#ownerFilter").value;
+
+      const status =
+        $("#statusFilter").value;
+
+      const type =
+        $("#typeFilter").value;
+
+      return activeActivities().filter(item => {
+        const text = [
+          item.code,
+          item.description,
+          item.pillar,
+          item.owner,
+          item.resource
+        ].join(" ").toLowerCase();
+
+        return (
+          (!search || text.includes(search)) &&
+          (!pillar || item.pillar === pillar) &&
+          (!owner || item.owner === owner) &&
+          (!status ||
+            effectiveStatus(item) === status) &&
+          (!type || item.type === type)
+        );
+      });
+    }
+
+    function renderActivities() {
+      const list = filteredActivities();
+
+      $("#activitiesTable").innerHTML =
+        list.length
+          ? list.map(item => `
+            <tr
+              class="clickable"
+              data-open-activity="${escapeHtml(item.id)}"
+            >
+              <td>
+                <strong>
+                  ${escapeHtml(item.code)}
+                </strong>
+              </td>
+
+              <td>
+                ${escapeHtml(item.description)}
+                <br>
+                <small class="muted">
+                  ${escapeHtml(item.type)}
+                </small>
+              </td>
+
+              <td>${escapeHtml(item.pillar)}</td>
+
+              <td>
+                ${escapeHtml(item.owner || "—")}
+              </td>
+
+              <td>${formatDate(item.start)}</td>
+
+              <td>
+                ${formatDate(item.newEnd || item.end)}
+              </td>
+
+              <td>
+                ${statusBadge(effectiveStatus(item))}
+              </td>
+
+              <td>
+                <div class="progress">
+                  <span
+                    style="width:${progressValue(item.progress)}%"
+                  ></span>
+                </div>
+
+                <small>
+                  ${progressValue(item.progress)}%
+                </small>
+              </td>
+            </tr>
+          `).join("")
+          : `
+            <tr>
+              <td colspan="8">
+                <div class="empty">
+                  Nenhuma atividade encontrada.
+                </div>
+              </td>
+            </tr>
+          `;
+
+      $$("[data-open-activity]").forEach(element => {
+        element.addEventListener("click", () => {
+          openActivity(
+            element.dataset.openActivity
+          );
+        });
+      });
+    }
+
+    function renderPillars() {
+      const project = activeProject();
+
+      if (!project) {
+        $("#pillarsTable").innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty">
+                Nenhum projeto selecionado.
+              </div>
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+      const pillars = [
+        ...new Set(
+          project.activities
+            .map(item => item.pillar)
+            .filter(Boolean)
+        )
+      ].sort();
+
+      $("#pillarsTable").innerHTML =
+        pillars.length
+          ? pillars.map(pillar => {
+              const list =
+                project.activities.filter(
+                  item => item.pillar === pillar
+                );
+
+              const average = list.length
+                ? Math.round(
+                    list.reduce(
+                      (sum, item) =>
+                        sum + progressValue(
+                          item.progress
+                        ),
+                      0
+                    ) / list.length
+                  )
+                : 0;
+
+              const delayed = list.filter(item =>
+                effectiveStatus(item) === "Atrasado"
+              ).length;
+
+              const metadata =
+                project.pillarMeta?.[pillar] || {};
+
+              return `
+                <tr>
+                  <td>
+                    <strong>
+                      ${escapeHtml(pillar)}
+                    </strong>
+                  </td>
+
+                  <td>
+                    ${escapeHtml(
+                      metadata.leader ||
+                      "Não identificado"
+                    )}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(
+                      metadata.phase ||
+                      "Não informada"
+                    )}
+                  </td>
+
+                  <td>${list.length}</td>
+
+                  <td>${average}%</td>
+                  <td>${delayed}</td>
+
+                  <td>
+                    <button
+                      class="btn small"
+                      data-filter-pillar="${escapeHtml(pillar)}"
+                    >
+                      Ver atividades
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join("")
+          : `
+            <tr>
+              <td colspan="7">
+                <div class="empty">
+                  Nenhum pilar encontrado.
+                </div>
+              </td>
+            </tr>
+          `;
+
+      $$("[data-filter-pillar]").forEach(button => {
+        button.addEventListener("click", () => {
+          $("#pillarFilter").value =
+            button.dataset.filterPillar;
+
+          goToPage("activities");
+          renderActivities();
+        });
+      });
+    }
+
+    function renderDelays() {
+      let list = activeActivities().filter(item =>
+        effectiveStatus(item) === "Atrasado"
+      );
+
+      if ($("#onlyWithoutReason").checked) {
+        list = list.filter(item =>
+          !item.reason
+        );
+      }
+
+      $("#delaysTable").innerHTML =
+        list.length
+          ? list.map(item => `
+            <tr>
+              <td>${escapeHtml(item.code)}</td>
+
+              <td>
+                ${escapeHtml(item.description)}
+              </td>
+
+              <td>${escapeHtml(item.pillar)}</td>
+
+              <td>
+                ${escapeHtml(item.owner || "—")}
+              </td>
+
+              <td>
+                ${formatDate(item.newEnd || item.end)}
+              </td>
+
+              <td>
+                <span class="status status-danger">
+                  ${daysLate(item.newEnd || item.end)}
+                  dias
+                </span>
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  item.reason || "Não informada"
+                )}
+              </td>
+
+              <td>
+                ${formatDate(item.newEnd)}
+              </td>
+
+              <td>
+                <button
+                  class="btn small"
+                  data-open-activity="${escapeHtml(item.id)}"
+                >
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          `).join("")
+          : `
+            <tr>
+              <td colspan="9">
+                <div class="empty">
+                  Nenhuma atividade atrasada.
+                </div>
+              </td>
+            </tr>
+          `;
+
+      $$("[data-open-activity]").forEach(element => {
+        element.addEventListener("click", () => {
+          openActivity(
+            element.dataset.openActivity
+          );
+        });
+      });
+    }
+
+    function getGanttPeriods(start, end, scale) {
+      const periods = [];
+      const current = new Date(start);
+
+      if (scale === "year") {
+        for (
+          let year = start.getUTCFullYear();
+          year <= end.getUTCFullYear();
+          year++
+        ) {
+          periods.push({
+            label: String(year),
+            start: new Date(Date.UTC(year, 0, 1)),
+            end: new Date(Date.UTC(year + 1, 0, 1))
+          });
+        }
+
+        return periods;
+      }
+
+      if (scale === "quarter") {
+        let year = start.getUTCFullYear();
+        let quarter =
+          Math.floor(start.getUTCMonth() / 3);
+
+        while (
+          year < end.getUTCFullYear() ||
+          (
+            year === end.getUTCFullYear() &&
+            quarter <=
+              Math.floor(end.getUTCMonth() / 3)
+          )
+        ) {
+          const month = quarter * 3;
+
+          periods.push({
+            label: `T${quarter + 1}/${String(year).slice(-2)}`,
+            start: new Date(
+              Date.UTC(year, month, 1)
+            ),
+            end: new Date(
+              Date.UTC(year, month + 3, 1)
+            )
+          });
+
+          quarter++;
+
+          if (quarter > 3) {
+            quarter = 0;
+            year++;
+          }
+        }
+
+        return periods;
+      }
+
+      current.setUTCDate(1);
+
+      while (current <= end) {
+        const year =
+          current.getUTCFullYear();
+
+        const month =
+          current.getUTCMonth();
+
+        periods.push({
+          label: new Intl.DateTimeFormat(
+            "pt-BR",
+            {
+              month: "short",
+              year: "numeric",
+              timeZone: "UTC"
+            }
+          ).format(current),
+
+          start: new Date(
+            Date.UTC(year, month, 1)
+          ),
+
+          end: new Date(
+            Date.UTC(year, month + 1, 1)
+          )
+        });
+
+        current.setUTCMonth(month + 1);
+      }
+
+      return periods;
+    }
+
+    function renderGantt() {
+      const project = activeProject();
+      const target = $("#gantt");
+
+      if (!project || !project.activities.length) {
+        target.innerHTML = `
+          <div class="empty">
+            Nenhum dado disponível para o gráfico de Gantt.
+          </div>
+        `;
+
+        return;
+      }
+
+      const validDates = project.activities
+        .flatMap(item => [
+          parseDate(item.start),
+          parseDate(item.newEnd || item.end)
+        ])
+        .filter(Boolean);
+
+      if (!validDates.length) {
+        target.innerHTML = `
+          <div class="empty">
+            As atividades não possuem datas válidas.
+          </div>
+        `;
+
+        return;
+      }
+
+      const scale =
+        $("#ganttScale").value;
+
+      const minDate = new Date(
+        Math.min(...validDates.map(date =>
+          date.getTime()
+        ))
+      );
+
+      const maxDate = new Date(
+        Math.max(...validDates.map(date =>
+          date.getTime()
+        ))
+      );
+
+      minDate.setUTCDate(1);
+      maxDate.setUTCDate(1);
+      maxDate.setUTCMonth(
+        maxDate.getUTCMonth() + 1
+      );
+
+      const periods = getGanttPeriods(
+        minDate,
+        maxDate,
+        scale
+      );
+
+      const timelineStart =
+        periods[0].start;
+
+      const timelineEnd =
+        periods[periods.length - 1].end;
+
+      const totalTime =
+        timelineEnd - timelineStart;
+
+      const grouped = {};
+
+      project.activities.forEach(item => {
+        if (!grouped[item.pillar]) {
+          grouped[item.pillar] = [];
+        }
+
+        grouped[item.pillar].push(item);
+      });
+
+      const header = `
+        <div class="gantt-header">
+          <div class="gantt-task-header">
+            Atividade
+          </div>
+
+          <div class="gantt-timeline">
+            <div class="gantt-periods">
+              ${periods.map(period => `
+                <div class="gantt-period">
+                  ${escapeHtml(period.label)}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+
+      let rows = "";
+
+      Object.keys(grouped)
+        .sort()
+        .forEach(pillar => {
+          rows += `
+            <div class="gantt-row">
+              <div class="gantt-task pillar-title">
+                ${escapeHtml(pillar)}
+              </div>
+
+              <div class="gantt-bar-area"></div>
+            </div>
+          `;
+
+          grouped[pillar]
+            .sort((a, b) =>
+              (a.order || 0) - (b.order || 0)
+            )
+            .forEach(item => {
+              const start =
+                parseDate(item.start);
+
+              const end =
+                parseDate(item.newEnd || item.end);
+
+              if (!start || !end) {
+                return;
+              }
+
+              const left = Math.max(
+                0,
+                ((start - timelineStart) /
+                  totalTime) * 100
+              );
+
+              const right = Math.min(
+                100,
+                ((end - timelineStart) /
+                  totalTime) * 100
+              );
+
+              const width = Math.max(
+                .5,
+                right - left
+              );
+
+              const status =
+                effectiveStatus(item);
+
+              const color =
+                statusClass(status)
+                  .replace("status-", "");
+
+              let originalHtml = "";
+
+              if (
+                item.newEnd &&
+                item.end &&
+                item.newEnd !== item.end
+              ) {
+                const original =
+                  parseDate(item.end);
+
+                if (original) {
+                  const originalLeft =
+                    Math.max(
+                      0,
+                      ((parseDate(item.start) -
+                        timelineStart) /
+                        totalTime) * 100
+                    );
+
+                  const originalRight =
+                    Math.min(
+                      100,
+                      ((original -
+                        timelineStart) /
+                        totalTime) * 100
+                    );
+
+                  originalHtml = `
+                    <div
+                      class="gantt-original"
+                      style="
+                        left:${originalLeft}%;
+                        width:${Math.max(
+                          .5,
+                          originalRight -
+                          originalLeft
+                        )}%;
+                      "
+                    ></div>
+                  `;
+                }
+              }
+
+              rows += `
+                <div class="gantt-row">
+                  <div
+                    class="gantt-task ${
+                      item.type === "Tarefa"
+                        ? "child"
+                        : ""
+                    }"
+                    data-open-activity="${escapeHtml(item.id)}"
+                    title="${escapeHtml(item.description)}"
+                  >
+                    ${escapeHtml(item.code)}
+                    —
+                    ${escapeHtml(item.description)}
+                  </div>
+
+                  <div class="gantt-bar-area">
+                    ${originalHtml}
+
+                    <div
+                      class="gantt-bar ${color}"
+                      data-open-activity="${escapeHtml(item.id)}"
+                      style="
+                        left:${left}%;
+                        width:${width}%;
+                      "
+                      title="${escapeHtml(
+                        item.description
+                      )} — ${status}"
+                    >
+                      ${progressValue(item.progress)}%
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+        });
+
+      const today =
+        new Date();
+
+      const todayPosition =
+        ((today - timelineStart) /
+          totalTime) * 100;
+
+      const todayHtml =
+        todayPosition >= 0 &&
+        todayPosition <= 100
+          ? `
+            <div
+              class="gantt-today"
+              style="left:${todayPosition}%"
+            ></div>
+          `
+          : "";
+
+      target.innerHTML = `
+        <div class="gantt">
+          ${header}
+
+          <div class="gantt-body">
+            ${rows}
+          </div>
+        </div>
+      `;
+
+      const timelineElements =
+        $$(".gantt-timeline");
+
+      timelineElements.forEach(element => {
+        element.insertAdjacentHTML(
+          "beforeend",
+          todayHtml
+        );
+      });
+
+      $$("[data-open-activity]").forEach(element => {
+        element.addEventListener("click", () => {
+          openActivity(
+            element.dataset.openActivity
+          );
+        });
+      });
+    }
+
+    function renderProjects() {
+      if (!state.projects.length) {
+        $("#projectsList").innerHTML = `
+          <div class="empty">
+            Nenhum projeto cadastrado.
+          </div>
+        `;
+
+        return;
+      }
+
+      $("#projectsList").innerHTML =
+        state.projects.map(project => `
+          <div class="project-card">
+            <div>
+              <h3>
+                ${escapeHtml(project.name)}
+              </h3>
+
+              <p>
+                Líder:
+                ${escapeHtml(
+                  project.leader ||
+                  "Não informado"
+                )}
+              </p>
+
+              <p>
+                Atividades:
+                ${project.activities.length}
+                · Arquivo:
+                ${escapeHtml(
+                  project.sourceFile ||
+                  "não importado"
+                )}
+              </p>
+            </div>
+
+            <div class="toolbar">
+              <button
+                class="btn small"
+                data-select-project="${escapeHtml(project.id)}"
+              >
+                Selecionar
+              </button>
+
+              <button
+                class="btn small danger"
+                data-delete-project="${escapeHtml(project.id)}"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        `).join("");
+
+      $$("[data-select-project]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.activeProjectId =
+            button.dataset.selectProject;
+
+          saveState();
+          renderAll();
+
+          showToast(
+            "Projeto selecionado."
+          );
+        });
+      });
+
+      $$("[data-delete-project]").forEach(button => {
+        button.addEventListener("click", () => {
+          deleteProject(
+            button.dataset.deleteProject
+          );
+        });
+      });
+    }
+
+    function renderProjectInformation() {
+      const project = activeProject();
+
+      $("#projectInformation").innerHTML =
+        project
+          ? `
+            <p>
+              <strong>Nome:</strong>
+              ${escapeHtml(project.name)}
+            </p>
+
+            <p>
+              <strong>Líder:</strong>
+              ${escapeHtml(
+                project.leader ||
+                "Não informado"
+              )}
+            </p>
+
+            <p>
+              <strong>Arquivo:</strong>
+              ${escapeHtml(
+                project.sourceFile ||
+                "Não importado"
+              )}
+            </p>
+
+            <p>
+              <strong>Abas:</strong>
+              ${project.sheets?.length || 0}
+            </p>
+
+            <p>
+              <strong>Atividades:</strong>
+              ${project.activities.length}
+            </p>
+            <p>
+              <strong>A3:</strong>
+              ${project.a3?.image
+                ? "Anexado (" + escapeHtml(project.a3.name || "imagem") + ")"
+                : "Não anexado"}
+            </p>
+          `
+          : `
+            <div class="empty">
+              Nenhum projeto selecionado.
+            </div>
+          `;
+    }
+
+    function openActivity(activityId = "") {
+      if (!activeProject()) {
+        showToast(
+          "Selecione ou crie um projeto primeiro."
+        );
+
+        return;
+      }
+
+      const activity =
+        activeActivities().find(
+          item => item.id === activityId
+        );
+
+      $("#activityForm").reset();
+
+      $("#activityId").value =
+        activity?.id || "";
+
+      $("#activityModalTitle").textContent =
+        activity
+          ? "Editar atividade"
+          : "Nova atividade";
+
+      $("#deleteActivityButton").style.display =
+        activity
+          ? "inline-block"
+          : "none";
+
+      if (activity) {
+        $("#activityPillar").value =
+          activity.pillar || "";
+
+        $("#activityType").value =
+          activity.type || "Tarefa";
+
+        $("#activityCode").value =
+          activity.code || "";
+
+        $("#activityOwner").value =
+          activity.owner || "";
+
+        $("#activityResource").value =
+          activity.resource || "";
+
+        $("#activityStatus").value =
+          normalizeStatus(activity.status) ||
+          "Não iniciado";
+
+        $("#activityStart").value =
+          dateKey(activity.start);
+
+        $("#activityEnd").value =
+          dateKey(activity.end);
+
+        $("#activityNewEnd").value =
+          dateKey(activity.newEnd);
+
+        $("#activityProgress").value =
+          progressValue(activity.progress);
+
+        $("#activityDescription").value =
+          activity.description || "";
+
+        $("#activityReason").value =
+          activity.reason || "";
+
+        $("#activityRecoveryOwner").value =
+          activity.recoveryOwner || "";
+
+        $("#activityRecoveryPlan").value =
+          activity.recoveryPlan || "";
+      } else {
+        $("#activityStatus").value =
+          "Não iniciado";
+
+        $("#activityProgress").value = 0;
+      }
+
+      $("#activityModal").classList.add("open");
+    }
+
+    function closeActivity() {
+      $("#activityModal").classList.remove("open");
+    }
+
+    function saveActivity(event) {
+      event.preventDefault();
+
+      const project = activeProject();
+
+      if (!project) {
+        return;
+      }
+
+      const activityId =
+        $("#activityId").value;
+
+      const data = {
+        pillar:
+          $("#activityPillar").value.trim(),
+
+        type:
+          $("#activityType").value,
+
+        code:
+          $("#activityCode").value.trim(),
+
+        owner:
+          $("#activityOwner").value.trim(),
+
+        resource:
+          $("#activityResource").value.trim(),
+
+        status:
+          $("#activityStatus").value,
+
+        start:
+          $("#activityStart").value,
+
+        end:
+          $("#activityEnd").value,
+
+        originalEnd:
+          $("#activityEnd").value,
+
+        newEnd:
+          $("#activityNewEnd").value,
+
+        progress:
+          progressValue(
+            $("#activityProgress").value
+          ),
+
+        description:
+          $("#activityDescription").value.trim(),
+
+        reason:
+          $("#activityReason").value.trim(),
+
+        recoveryOwner:
+          $("#activityRecoveryOwner").value.trim(),
+
+        recoveryPlan:
+          $("#activityRecoveryPlan").value.trim(),
+
+        updatedAt:
+          new Date().toISOString()
+      };
+
+      if (activityId) {
+        const activity =
+          project.activities.find(
+            item => item.id === activityId
+          );
+
+        if (activity) {
+          Object.assign(activity, data);
+
+          activity.manualStatus = true;
+          activity.manualProgress = true;
+        }
+      } else {
+        project.activities.push({
+          id: id(),
+          order:
+            project.activities.length + 1,
+          history: [],
+          ...data
+        });
+      }
+
+      project.updatedAt =
+        new Date().toISOString();
+
+      saveState();
+      closeActivity();
+      renderAll();
+
+      showToast(
+        "Atividade salva com sucesso."
+      );
+    }
+
+    async function deleteActivity() {
+      const project = activeProject();
+      const activityId =
+        $("#activityId").value;
+
+      if (!project || !activityId) {
+        return;
+      }
+
+      if (!(await askConfirm(
+        "Deseja excluir esta atividade?"
+      ))) {
+        return;
+      }
+
+      project.activities =
+        project.activities.filter(
+          item => item.id !== activityId
+        );
+
+      project.updatedAt =
+        new Date().toISOString();
+
+      saveState();
+      closeActivity();
+      renderAll();
+
+      showToast(
+        "Atividade excluída."
+      );
+    }
+
+    function openProjectModal() {
+      $("#projectForm").reset();
+      $("#projectModal").classList.add("open");
+    }
+
+    function closeProjectModal() {
+      $("#projectModal").classList.remove("open");
+    }
+
+    function createProject(event) {
+      event.preventDefault();
+
+      if (state.projects.length >= 3) {
+        alert(
+          "O sistema permite no máximo três projetos."
+        );
+
+        return;
+      }
+
+      const name =
+        $("#newProjectName").value.trim();
+
+      const leader =
+        $("#newProjectLeader").value.trim();
+
+      if (!name) {
+        return;
+      }
+
+      const project = {
+        id: id(),
+        name,
+        leader,
+        sourceFile: "",
+        importedAt: "",
+        updatedAt:
+          new Date().toISOString(),
+        sheets: [],
+        pillarMeta: {},
+        activities: []
+      };
+
+      state.projects.push(project);
+      state.activeProjectId =
+        project.id;
+
+      saveState();
+      closeProjectModal();
+      renderAll();
+
+      showToast(
+        "Projeto criado com sucesso."
+      );
+    }
+
+    async function deleteProject(projectId) {
+      const project =
+        state.projects.find(
+          item => item.id === projectId
+        );
+
+      if (!project) {
+        return;
+      }
+
+      if (!(await askConfirm(
+        `Excluir o projeto "${project.name}"?` +
+        (Shared.mode === "shared"
+          ? "\n\nA exclusão vale para todas as pessoas com acesso."
+          : "")
+      ))) {
+        return;
+      }
+
+      state.projects =
+        state.projects.filter(
+          item => item.id !== projectId
+        );
+
+      if (
+        state.activeProjectId === projectId
+      ) {
+        state.activeProjectId =
+          state.projects[0]?.id || "";
+      }
+
+      saveState();
+      renderAll();
+
+      showToast(
+        "Projeto excluído."
+      );
+    }
+
+    function getField(row, aliases) {
+      const keys = Object.keys(row);
+
+      for (const key of keys) {
+        const normalizedKey =
+          normalize(key);
+
+        const matches =
+          aliases.some(alias => {
+            const normalizedAlias =
+              normalize(alias);
+
+            return (
+              normalizedKey === normalizedAlias ||
+              (normalizedAlias.length > 3 &&
+                normalizedKey.includes(normalizedAlias))
+            );
+          });
+
+        if (
+          matches &&
+          row[key] !== null &&
+          row[key] !== undefined &&
+          String(row[key]).trim() !== ""
+        ) {
+          return row[key];
+        }
+      }
+
+      return "";
+    }
+
+    function findHeaderRow(matrix) {
+      const aliases = [
+        [
+          "Código",
+          "Codigo",
+          "Code",
+          "ID"
+        ],
+        [
+          "Ação Macro / Tarefa",
+          "Ação Macro",
+          "Tarefa",
+          "Atividade",
+          "Descrição",
+          "Descricao"
+        ],
+        [
+          "Data de Início",
+          "Data Inicio",
+          "Início",
+          "Inicio"
+        ],
+        [
+          "Previsão de Conclusão",
+          "Previsao de Conclusao",
+          "Data de Conclusão",
+          "Data de Conclusao",
+          "Conclusão",
+          "Conclusao",
+          "Prazo",
+          "Término",
+          "Termino",
+          "Data de Término",
+          "Data Fim"
+        ]
+      ];
+
+      for (
+        let rowIndex = 0;
+        rowIndex < matrix.length;
+        rowIndex++
+      ) {
+        const headers =
+          matrix[rowIndex]
+            .map(value =>
+              String(value ?? "").trim()
+            )
+            .filter(Boolean);
+
+        const count =
+          aliases.filter(group =>
+            headers.some(header => {
+              const normalizedHeader =
+                normalize(header);
+
+              return group.some(alias => {
+                const normalizedAlias =
+                  normalize(alias);
+
+                return (
+                  normalizedHeader ===
+                    normalizedAlias ||
+                  (normalizedAlias.length > 3 &&
+                  normalizedHeader.includes(normalizedAlias))
+                );
+              });
+            })
+          ).length;
+
+        if (count >= 3) {
+          return rowIndex;
+        }
+      }
+
+      return -1;
+    }
+
+    function extractLeader(matrix) {
+      // Aceita "Líder do Master Plan: Nome" (mesma célula) e
+      // "Líder do Pilar" | "Nome" (células vizinhas na mesma linha).
+      for (const row of matrix) {
+        const cells = row.map(value => String(value ?? "").trim());
+        const at = cells.findIndex(text =>
+          /liderdo(masterplan|pilar)/.test(normalize(text))
+        );
+        if (at < 0) {
+          continue;
+        }
+        const separator = cells[at].indexOf(":");
+        const inline = separator >= 0
+          ? cells[at].slice(separator + 1).trim()
+          : "";
+        if (inline) {
+          return inline;
+        }
+        const next = cells.slice(at + 1).find(Boolean);
+        if (next) {
+          return next;
+        }
+      }
+      return "";
+    }
+
+    function createActivity(
+      row,
+      pillar,
+      order
+    ) {
+      const code = getField(row, [
+        "Código",
+        "Codigo",
+        "Code",
+        "ID"
+      ]);
+
+      const description = getField(row, [
+        "Ação Macro / Tarefa",
+        "Ação Macro",
+        "Tarefa",
+        "Atividade",
+        "Descrição",
+        "Descricao"
+      ]);
+
+      const resource = getField(row, [
+        "Recurso Necessário",
+        "Recurso Necessario",
+        "Recurso"
+      ]);
+
+      const owner = getField(row, [
+        "Responsável",
+        "Responsavel",
+        "Owner",
+        "Líder",
+        "Lider"
+      ]);
+
+      const start = getField(row, [
+        "Data de Início",
+        "Data Inicio",
+        "Início",
+        "Inicio",
+        "Start"
+      ]);
+
+      const end = getField(row, [
+        "Previsão de Conclusão",
+        "Previsao de Conclusao",
+        "Data de Conclusão",
+        "Data de Conclusao",
+        "Conclusão",
+        "Conclusao",
+        "Prazo",
+        "Término",
+        "Termino",
+        "Data de Término",
+        "Data Fim",
+        "Fim",
+        "End"
+      ]);
+
+      const status = getField(row, [
+        "Status",
+        "Situação",
+        "Situacao"
+      ]);
+
+      const completed = getField(row, [
+        "Concluído?",
+        "Concluido?",
+        "Concluído",
+        "Concluido"
+      ]);
+
+      const progress = getField(row, [
+        "Progresso",
+        "Percentual",
+        "Progress"
+      ]);
+
+      const type = getField(row, [
+        "Linha",
+        "Tipo",
+        "Type"
+      ]);
+
+      let finalStatus =
+        normalizeStatus(status);
+
+      const completedText =
+        normalize(completed);
+
+      if (
+        completedText === "ok" ||
+        completedText === "sim" ||
+        completedText === "true"
+      ) {
+        finalStatus = "Concluído";
+      }
+
+      return {
+        id: id(),
+        order,
+        // Arquivo exportado pela plataforma traz a coluna "Pilar"; no Master Plan
+        // o pilar é o nome da aba.
+        pillar: String(getField(row, ["Pilar"]) || pillar).trim(),
+        sheet: pillar,
+        code: String(code || "").trim(),
+        description:
+          String(description || "").trim(),
+        resource:
+          String(resource || "").trim(),
+        owner:
+          String(owner || "").trim(),
+        start: excelDate(start),
+        end: excelDate(end),
+        originalEnd: excelDate(end),
+        newEnd: "",
+        status:
+          finalStatus || "Não iniciado",
+        // Concluído = 100% (tarefas do Master Plan não têm progresso preenchido)
+        progress:
+          finalStatus === "Concluído"
+            ? 100
+            : progressValue(progress),
+        type:
+          normalize(type) === "tarefa"
+            ? "Tarefa"
+            : normalize(type) === "realizado"
+              ? "Realizado"
+              : "Programado",
+        reason: "",
+        recoveryOwner: "",
+        recoveryPlan: "",
+        updatedAt:
+          new Date().toISOString(),
+        history: []
+      };
+    }
+
+    function isValidActivity(activity) {
+      return Boolean(
+        activity.code ||
+        activity.description ||
+        activity.start ||
+        activity.end
+      );
+    }
+
+    function removeDuplicates(activities) {
+      const seen = new Set();
+      const result = [];
+
+      activities.forEach(activity => {
+        if (activity.type === "Realizado") {
+          return;
+        }
+
+        const key = [
+          normalize(activity.pillar),
+          normalize(activity.code),
+          normalize(activity.description)
+        ].join("|");
+
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(activity);
+        }
+      });
+
+      return result;
+    }
+
+    function mergeWithPrevious(
+      fresh,
+      previous
+    ) {
+      if (!previous) {
+        return fresh;
+      }
+
+      return {
+        ...fresh,
+
+        id:
+          previous.id,
+
+        newEnd:
+          previous.newEnd ||
+          fresh.newEnd,
+
+        reason:
+          previous.reason ||
+          fresh.reason,
+
+        recoveryOwner:
+          previous.recoveryOwner ||
+          fresh.recoveryOwner,
+
+        recoveryPlan:
+          previous.recoveryPlan ||
+          fresh.recoveryPlan,
+
+        status:
+          previous.manualStatus
+            ? previous.status
+            : fresh.status,
+
+        progress:
+          previous.manualProgress
+            ? previous.progress
+            : fresh.progress,
+
+        updatedAt:
+          previous.updatedAt ||
+          fresh.updatedAt,
+
+        history:
+          previous.history ||
+          []
+      };
+    }
+
+    /*
+      Corta as linhas a partir da LEGENDA. No Master Plan, o bloco de
+      legenda e as notas finais (cores, "Semana atual", etc.) ficam abaixo
+      das tarefas e não são atividades.
+    */
+    function cutAtLegend(rows) {
+      const index = rows.findIndex(row =>
+        row.slice(0, 3).some(cell =>
+          normalize(cell) === "legenda"
+        )
+      );
+      return index < 0 ? rows : rows.slice(0, index);
+    }
+
+    async function importWorkbook(file) {
+      if (!file) {
+        return;
+      }
+
+      const project = activeProject();
+
+      if (!project) {
+        alert(
+          "Selecione ou crie um projeto antes de importar."
+        );
+
+        return;
+      }
+
+      if (!window.XLSX) {
+        alert(
+          "A biblioteca Excel não foi carregada. Verifique a conexão com a internet."
+        );
+
+        return;
+      }
+
+      try {
+        const buffer =
+          await file.arrayBuffer();
+
+        const workbook =
+          XLSX.read(
+            buffer,
+            {
+              type: "array",
+              cellDates: false, // serial do Excel -> evita deslocamento de 1 dia em fusos a leste de UTC
+              raw: true
+            }
+          );
+
+        const imported = [];
+        const sheets = [];
+        const pillarMeta = {};
+
+        workbook.SheetNames.forEach(sheetName => {
+          const worksheet =
+            workbook.Sheets[sheetName];
+
+          const matrix =
+            XLSX.utils.sheet_to_json(
+              worksheet,
+              {
+                header: 1,
+                defval: "",
+                raw: true
+              }
+            );
+
+          const headerIndex =
+            findHeaderRow(matrix);
+
+          if (headerIndex < 0) {
+            return;
+          }
+
+          const leader =
+            extractLeader(matrix);
+
+          pillarMeta[sheetName] = {
+            leader:
+              leader || "Não identificado",
+            phase: "Não informada"
+          };
+
+          const headers =
+            matrix[headerIndex].map(
+              (value, index) =>
+                String(value ?? "").trim() ||
+                `Coluna_${index + 1}`
+            );
+
+          const rows =
+            cutAtLegend(matrix.slice(headerIndex + 1))
+              .map(row => {
+                const object = {};
+
+                headers.forEach(
+                  (header, index) => {
+                    object[header] =
+                      row[index] ?? "";
+                  }
+                );
+
+                return object;
+              })
+              .filter(row => {
+                const code = getField(row, [
+                  "Código",
+                  "Codigo",
+                  "Code",
+                  "ID"
+                ]);
+
+                const description =
+                  getField(row, [
+                    "Ação Macro / Tarefa",
+                    "Ação Macro",
+                    "Tarefa",
+                    "Atividade",
+                    "Descrição",
+                    "Descricao"
+                  ]);
+
+                return Boolean(
+                  code ||
+                  description ||
+                  getField(row, [
+                    "Data de Início",
+                    "Data Inicio",
+                    "Início",
+                    "Inicio"
+                  ]) ||
+                  getField(row, [
+                    "Previsão de Conclusão",
+                    "Previsao de Conclusao",
+                    "Conclusão",
+                    "Conclusao",
+                    "Prazo",
+                    "Término",
+                    "Termino",
+                    "Data de Término",
+                    "Data Fim",
+                    "Fim"
+                  ])
+                );
+              })
+              .map((row, index) =>
+                createActivity(
+                  row,
+                  sheetName,
+                  imported.length + index + 1
+                )
+              )
+              .filter(isValidActivity);
+
+          if (rows.length) {
+            sheets.push(sheetName);
+            imported.push(...rows);
+          }
+        });
+
+        const unique =
+          removeDuplicates(imported);
+
+        if (!unique.length) {
+          alert(
+            "Nenhuma atividade foi identificada no arquivo."
+          );
+
+          return;
+        }
+
+        const previousMap =
+          new Map(
+            project.activities.map(item => [
+              [
+                normalize(item.pillar),
+                normalize(item.code),
+                normalize(item.description)
+              ].join("|"),
+              item
+            ])
+          );
+
+        project.activities =
+          unique.map(activity => {
+            const key = [
+              normalize(activity.pillar),
+              normalize(activity.code),
+              normalize(activity.description)
+            ].join("|");
+
+            return mergeWithPrevious(
+              activity,
+              previousMap.get(key)
+            );
+          });
+
+        project.sourceFile =
+          file.name;
+
+        project.importedAt =
+          new Date().toISOString();
+
+        project.updatedAt =
+          new Date().toISOString();
+
+        project.sheets =
+          sheets;
+
+        project.pillarMeta =
+          pillarMeta;
+
+        const leaders = [
+          ...new Set(
+            Object.values(pillarMeta)
+              .map(item => item.leader)
+              .filter(
+                leader =>
+                  leader &&
+                  leader !== "Não identificado"
+              )
+          )
+        ];
+
+        if (!project.leader) {
+          project.leader =
+            leaders.join(" / ");
+        }
+
+        saveState();
+        renderAll();
+
+        alert(
+          "Importação concluída.\n\n" +
+          `Abas identificadas: ${sheets.length}\n` +
+          `Atividades válidas: ${project.activities.length}\n\n` +
+          `Projeto: ${project.name}`
+        );
+
+        showToast(
+          "Roadmap importado para o projeto ativo."
+        );
+      } catch (error) {
+        console.error(error);
+
+        alert(
+          "Erro ao importar a planilha:\n\n" +
+          error.message
+        );
+      }
+    }
+
+    function csvCell(value) {
+      return `"${String(value ?? "")
+        .replaceAll('"', '""')}"`;
+    }
+
+    function download(
+      content,
+      filename,
+      type
+    ) {
+      saveBlob(
+        new Blob(["\ufeff", content], { type }),
+        filename
+      );
+    }
+
+    function exportCsv() {
+      const project = activeProject();
+
+      if (!project) {
+        showToast(
+          "Nenhum projeto selecionado."
+        );
+
+        return;
+      }
+
+      const headers = [
+        "Projeto",
+        "Pilar",
+        "Código",
+        "Descrição",
+        "Tipo",
+        "Responsável",
+        "Data de início",
+        "Data de término",
+        "Nova data",
+        "Status",
+        "Progresso (%)",
+        "Justificativa",
+        "Plano de recuperação"
+      ];
+
+      const rows =
+        project.activities.map(item => [
+          project.name,
+          item.pillar,
+          item.code,
+          item.description,
+          item.type,
+          item.owner,
+          item.start,
+          item.end,
+          item.newEnd,
+          effectiveStatus(item),
+          progressValue(item.progress),
+          item.reason,
+          item.recoveryPlan
+        ]);
+
+      const csv = [
+        headers,
+        ...rows
+      ].map(row =>
+        row.map(csvCell).join(";")
+      ).join("\n");
+
+      download(
+        csv,
+        `${project.name.replace(/\s+/g, "_")}.csv`,
+        "text/csv;charset=utf-8"
+      );
+
+      showToast("CSV exportado.");
+    }
+
+    function exportExcel() {
+      const project = activeProject();
+
+      if (!project || !window.XLSX) {
+        showToast(
+          "Selecione um projeto e verifique a conexão."
+        );
+
+        return;
+      }
+
+      const rows =
+        project.activities.map(item => ({
+          "Projeto": project.name,
+          "Pilar": item.pillar,
+          "Código": item.code,
+          "Descrição": item.description,
+          "Tipo": item.type,
+          "Responsável": item.owner,
+          "Data de início": item.start,
+          "Data de término original": item.end,
+          "Nova data de término": item.newEnd,
+          "Status": effectiveStatus(item),
+          "Progresso (%)":
+            progressValue(item.progress),
+          "Justificativa": item.reason,
+          "Plano de recuperação":
+            item.recoveryPlan
+        }));
+
+      const workbook =
+        XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        XLSX.utils.json_to_sheet(rows),
+        "Atividades"
+      );
+
+      saveBlob(
+        new Blob(
+          [XLSX.write(workbook, { bookType: "xlsx", type: "array" })],
+          { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+        ),
+        `${project.name.replace(/\s+/g, "_")}_atualizado.xlsx`
+      );
+
+      showToast("Excel exportado.");
+    }
+
+    function exportDelays() {
+      const project = activeProject();
+
+      if (!project) {
+        return;
+      }
+
+      const delayed =
+        project.activities.filter(item =>
+          effectiveStatus(item) === "Atrasado"
+        );
+
+      if (!delayed.length) {
+        showToast(
+          "Não existem atividades atrasadas."
+        );
+
+        return;
+      }
+
+      const headers = [
+        "Código",
+        "Descrição",
+        "Pilar",
+        "Responsável",
+        "Prazo",
+        "Dias em atraso",
+        "Justificativa",
+        "Nova data",
+        "Plano de recuperação"
+      ];
+
+      const rows =
+        delayed.map(item => [
+          item.code,
+          item.description,
+          item.pillar,
+          item.owner,
+          item.newEnd || item.end,
+          daysLate(item.newEnd || item.end),
+          item.reason,
+          item.newEnd,
+          item.recoveryPlan
+        ]);
+
+      const csv = [
+        headers,
+        ...rows
+      ].map(row =>
+        row.map(csvCell).join(";")
+      ).join("\n");
+
+      download(
+        csv,
+        `${project.name.replace(/\s+/g, "_")}_atrasadas.csv`,
+        "text/csv;charset=utf-8"
+      );
+
+      showToast(
+        "Relatório de atrasadas exportado."
+      );
+    }
+
+    async function backupJson() {
+      // O A3 de página hospedada é uma referência (/_blob/...): no backup
+      // ele vira imagem embutida para poder ser restaurado em qualquer lugar.
+      const copy = clone(state);
+      let skipped = 0;
+      for (const project of copy.projects) {
+        const a3 = project.a3;
+        if (a3 && a3.image && !a3.image.startsWith("data:")) {
+          try {
+            const response = await fetch(a3.image);
+            a3.image = await blobToDataUrl(await response.blob());
+            delete a3.assetId;
+          } catch {
+            delete project.a3;
+            skipped++;
+          }
+        }
+      }
+      download(
+        JSON.stringify(copy, null, 2),
+        "backup_roadmap_aemco.json",
+        "application/json"
+      );
+      showToast(
+        skipped
+          ? "Backup criado, mas o A3 de " + skipped +
+            " projeto(s) não pôde ser incluído."
+          : "Backup criado."
+      );
+    }
+
+    async function restoreJson(file) {
+      if (!file) {
+        return;
+      }
+      if (Shared.mode === "shared") {
+        if (!Shared.canWrite) {
+          showToast("Você tem acesso somente leitura.");
+          return;
+        }
+        if (!(await askConfirm(
+          "Restaurar este backup substitui os dados COMPARTILHADOS de " +
+          "todas as pessoas com acesso. Continuar?"
+        ))) {
+          return;
+        }
+      }
+
+      try {
+        const restored =
+          JSON.parse(await file.text());
+
+        if (
+          !Array.isArray(restored.projects)
+        ) {
+          throw new Error(
+            "Backup incompatível."
+          );
+        }
+
+        state = {
+          ...clone(DEFAULT_STATE),
+          ...restored,
+          projects:
+            restored.projects.slice(0, 3)
+        };
+
+        saveState();
+        renderAll();
+
+        showToast(
+          "Backup restaurado."
+        );
+      } catch (error) {
+        alert(
+          "Erro ao restaurar o backup:\n\n" +
+          error.message
+        );
+      }
+    }
+
+    /* =====================================================================
+       A3 DO PROJETO
+       ---------------------------------------------------------------------
+       Cada projeto guarda UMA imagem do A3 (base que contempla todos os
+       pilares) em project.a3:
+         { image, name, width, height, originalBytes, bytes, updatedAt }
+       - image: data URL em JPEG, já otimizada para caber no localStorage.
+       - O A3 vai junto no Backup JSON (state completo) e é removido junto
+         com o projeto se ele for excluído.
+       ===================================================================== */
+    const A3_MAX_CHARS = 1600000; // alvo máximo do data URL (~1,2 MB de imagem)
+    const A3_MAX_SIDE = 2000;     // maior lado em px após a otimização
+    const A3_MIN_SIDE = 1200;     // não reduz abaixo disso
+    const A3_QUALITIES = [0.9, 0.8, 0.7];
+    let a3Zoom = 1;               // 1 = ajustado à largura da área
+    let a3ShownProject = "";      // reinicia o zoom ao trocar de projeto
+
+    function a3Of(project) {
+      return project && project.a3 && project.a3.image
+        ? project.a3
+        : null;
+    }
+
+    function formatBytes(bytes) {
+      return bytes >= 1048576
+        ? (bytes / 1048576).toFixed(1).replace(".", ",") + " MB"
+        : Math.max(1, Math.round(bytes / 1024)) + " KB";
+    }
+
+    function formatDateTime(iso) {
+      const date = new Date(iso);
+      return isNaN(date.getTime())
+        ? "—"
+        : date.toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short"
+          });
+    }
+
+    // Grava o estado informando se deu certo (localStorage tem cota ~5 MB).
+    function saveStateSafe() {
+      return persist();
+    }
+
+    function loadImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(image);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error(
+            "Não foi possível ler a imagem. Use PNG, JPG ou WebP."
+          ));
+        };
+        image.src = url;
+      });
+    }
+
+    /*
+      Redimensiona (maior lado até A3_MAX_SIDE) e converte para JPEG.
+      Se ainda ficar grande, baixa a qualidade e depois o tamanho,
+      até caber em A3_MAX_CHARS ou chegar em A3_MIN_SIDE.
+    */
+    function optimizeImage(image) {
+      let side = A3_MAX_SIDE;
+      for (;;) {
+        const ratio = Math.min(
+          1,
+          side / Math.max(image.naturalWidth, image.naturalHeight)
+        );
+        const width = Math.max(1, Math.round(image.naturalWidth * ratio));
+        const height = Math.max(1, Math.round(image.naturalHeight * ratio));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#ffffff"; // PNG transparente vira fundo branco
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        let data = "";
+        for (const quality of A3_QUALITIES) {
+          data = canvas.toDataURL("image/jpeg", quality);
+          if (data.length <= A3_MAX_CHARS) {
+            return { image: data, width, height };
+          }
+        }
+        if (side <= A3_MIN_SIDE) {
+          return { image: data, width, height };
+        }
+        side = Math.max(A3_MIN_SIDE, Math.round(side * 0.85));
+      }
+    }
+
+    async function attachA3(file) {
+      const project = activeProject();
+      if (!project) {
+        showToast("Selecione ou crie um projeto primeiro.");
+        return;
+      }
+      if (!Shared.canWrite) {
+        showToast("Você tem acesso somente leitura.");
+        return;
+      }
+      if (!file) {
+        return;
+      }
+      if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+        alert(
+          "PDF não é aceito. Exporte o A3 como PNG ou JPG " +
+          "(em paisagem) e anexe a imagem."
+        );
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        alert("Formato não suportado. Use PNG, JPG ou WebP.");
+        return;
+      }
+      try {
+        showToast("Otimizando a imagem do A3...");
+        const source = await loadImageFile(file);
+        const result = optimizeImage(source);
+        const previous = project.a3;
+        let stored = {
+          image: result.image,
+          assetId: undefined,
+          bytes: Math.round(result.image.length * 0.75)
+        };
+        if (Shared.mode === "shared") {
+          // Página publicada: o arquivo vai para os assets e o projeto
+          // guarda só a referência.
+          if (!Shared.assets) {
+            alert(
+              "Somente Editores do artefato podem anexar o A3. " +
+              "Peça a quem publicou a plataforma."
+            );
+            return;
+          }
+          const upload = await Shared.assets.upload(
+            dataUrlToBlob(result.image)
+          );
+          stored = {
+            image: "/_blob/" + upload.id,
+            assetId: upload.id,
+            bytes: upload.sizeBytes
+          };
+        }
+        project.a3 = {
+          image: stored.image,
+          assetId: stored.assetId,
+          name: file.name,
+          width: result.width,
+          height: result.height,
+          originalBytes: file.size,
+          bytes: stored.bytes,
+          updatedAt: new Date().toISOString()
+        };
+        project.updatedAt = new Date().toISOString();
+        if (!saveStateSafe()) {
+          // Sem espaço: volta ao estado anterior e avisa.
+          if (previous) {
+            project.a3 = previous;
+          } else {
+            delete project.a3;
+          }
+          alert(
+            "Sem espaço no armazenamento do navegador para esta imagem.\n\n" +
+            "Tente uma imagem menor, ou remova o A3 de outro projeto " +
+            "(faça antes um Backup JSON)."
+          );
+          renderAll();
+          return;
+        }
+        if (
+          previous && previous.assetId && Shared.assets &&
+          previous.assetId !== project.a3.assetId
+        ) {
+          Shared.assets.delete(previous.assetId).catch(() => {});
+        }
+        a3Zoom = 1;
+        renderAll();
+        showToast("A3 anexado ao projeto.");
+      } catch (error) {
+        alert("Não foi possível anexar o A3:\n\n" + error.message);
+      }
+    }
+
+    async function removeA3() {
+      const project = activeProject();
+      if (!a3Of(project)) {
+        return;
+      }
+      if (!(await askConfirm(
+        "Remover o A3 do projeto \"" + project.name + "\"?"
+      ))) {
+        return;
+      }
+      const removedAsset = project.a3.assetId;
+      delete project.a3;
+      project.updatedAt = new Date().toISOString();
+      if (saveState() !== false && removedAsset && Shared.assets) {
+        Shared.assets.delete(removedAsset).catch(() => {});
+      }
+      renderAll();
+      showToast("A3 removido.");
+    }
+
+    async function downloadA3() {
+      const project = activeProject();
+      const a3 = a3Of(project);
+      if (!a3) {
+        return;
+      }
+      const filename =
+        "A3_" + project.name.replace(/[^\w-]+/g, "_") + ".jpg";
+      try {
+        const blob = a3.image.startsWith("data:")
+          ? dataUrlToBlob(a3.image)
+          : await (await fetch(a3.image)).blob();
+        await saveBlob(blob, filename);
+      } catch {
+        showToast("Não foi possível baixar a imagem do A3.");
+      }
+    }
+
+    function openA3Lightbox() {
+      const project = activeProject();
+      const a3 = a3Of(project);
+      if (!a3) {
+        return;
+      }
+      $("#a3LightboxImage").src = a3.image;
+      $("#a3LightboxTitle").textContent = "A3 · " + project.name;
+      $("#a3LightboxBody").classList.remove("actual");
+      $("#a3Lightbox").classList.add("open");
+    }
+
+    function closeA3Lightbox() {
+      $("#a3Lightbox").classList.remove("open");
+    }
+
+    function setA3Zoom(value) {
+      a3Zoom = Math.min(4, Math.max(0.5, value));
+      renderA3();
+    }
+
+    // Prévia do A3 no topo da Visão geral (miniatura ou convite a anexar).
+    function renderA3Preview(project, a3) {
+      const box = $("#a3Preview");
+      if (!project) {
+        box.innerHTML = "";
+        return;
+      }
+      box.innerHTML = a3
+        ? `<div class="card a3-preview">
+             <img src="${a3.image}" alt="A3 de ${escapeHtml(project.name)}"
+                  data-go-a3>
+             <div class="a3-preview-text">
+               <strong>A3 do projeto</strong><br>
+               <span class="muted">
+                 Base do projeto · atualizado em
+                 ${formatDateTime(a3.updatedAt)}
+               </span>
+             </div>
+             <button class="btn" data-go-a3>Abrir A3</button>
+           </div>`
+        : `<div class="card a3-preview">
+             <div class="a3-preview-text">
+               <strong>A3 do projeto</strong><br>
+               <span class="muted">
+                 Este projeto ainda não tem o A3. Anexe a imagem para ter
+                 a base do projeto sempre à mão.
+               </span>
+             </div>
+             <button class="btn primary" data-go-a3>Anexar A3</button>
+           </div>`;
+    }
+
+    function renderA3() {
+      const project = activeProject();
+      const a3 = a3Of(project);
+      if ((project?.id || "") !== a3ShownProject) {
+        a3ShownProject = project?.id || "";
+        a3Zoom = 1;
+      }
+      renderA3Preview(project, a3);
+      $("#a3Title").textContent = project
+        ? "A3 · " + project.name
+        : "A3";
+      const cannotAttach = !project ||
+        (Shared.mode === "shared" && !Shared.assets);
+      $("#a3AttachButton").disabled = cannotAttach;
+      $("#a3AttachButton").title =
+        project && cannotAttach
+          ? "Somente Editores do artefato podem anexar o A3"
+          : "";
+      $("#a3AttachButton").textContent =
+        a3 ? "📎 Substituir A3" : "📎 Anexar A3";
+      ["#a3FullButton", "#a3DownloadButton", "#a3RemoveButton"]
+        .forEach(selector => {
+          $(selector).hidden = !a3;
+        });
+      $("#a3ZoomControls").hidden = !a3;
+      $("#a3ZoomLabel").textContent = Math.round(a3Zoom * 100) + "%";
+      const viewer = $("#a3Viewer");
+      if (!project) {
+        viewer.innerHTML =
+          `<div class="empty">Selecione ou crie um projeto para anexar o A3.</div>`;
+        $("#a3Meta").innerHTML = "";
+        return;
+      }
+      viewer.innerHTML = a3
+        ? `<img id="a3Image" src="${a3.image}"
+                alt="A3 de ${escapeHtml(project.name)}"
+                style="width:${a3Zoom * 100}%">`
+        : `<div class="a3-drop" id="a3Drop">
+             <strong>Nenhum A3 anexado</strong>
+             <span>
+               Arraste a imagem do A3 aqui ou clique para escolher
+               (PNG, JPG ou WebP).
+             </span>
+           </div>`;
+      const used = JSON.stringify(state).length;
+      $("#a3Meta").innerHTML =
+        (a3
+          ? `<span>Arquivo: ${escapeHtml(a3.name || "imagem")}</span>
+             <span>${a3.width} × ${a3.height} px</span>
+             <span>Armazenado: ${formatBytes(a3.bytes || 0)}
+               (original ${formatBytes(a3.originalBytes || 0)})</span>
+             <span>Atualizado em ${formatDateTime(a3.updatedAt)}</span>`
+          : "") +
+        (Shared.mode === "shared"
+          ? `<span>Armazenamento: servidor compartilhado</span>`
+          : `<span>Armazenamento do navegador (estimado):
+               ${(used / 1000000).toFixed(1).replace(".", ",")} MB de ~5 MB</span>`);
+    }
+
+    // --- Eventos do A3 ---------------------------------------------------
+    $("#a3AttachButton").addEventListener(
+      "click",
+      () => $("#a3Input").click()
+    );
+    $("#a3Input").addEventListener("change", event => {
+      attachA3(event.target.files[0]);
+      event.target.value = ""; // permite escolher o mesmo arquivo de novo
+    });
+    $("#a3Viewer").addEventListener("click", event => {
+      if (event.target.closest("#a3Drop")) {
+        $("#a3Input").click();
+      } else if (event.target.closest("#a3Image")) {
+        openA3Lightbox();
+      }
+    });
+    $("#a3Viewer").addEventListener("dragover", event => {
+      event.preventDefault();
+      $("#a3Viewer").classList.add("dragging");
+    });
+    $("#a3Viewer").addEventListener("dragleave", () => {
+      $("#a3Viewer").classList.remove("dragging");
+    });
+    $("#a3Viewer").addEventListener("drop", event => {
+      event.preventDefault();
+      $("#a3Viewer").classList.remove("dragging");
+      attachA3(event.dataTransfer.files[0]);
+    });
+    $("#a3FullButton").addEventListener("click", openA3Lightbox);
+    $("#a3DownloadButton").addEventListener("click", downloadA3);
+    $("#a3RemoveButton").addEventListener("click", removeA3);
+    $("#a3ZoomIn").addEventListener("click", () => setA3Zoom(a3Zoom + 0.25));
+    $("#a3ZoomOut").addEventListener("click", () => setA3Zoom(a3Zoom - 0.25));
+    $("#a3ZoomFit").addEventListener("click", () => setA3Zoom(1));
+    $("#a3Preview").addEventListener("click", event => {
+      if (event.target.closest("[data-go-a3]")) {
+        goToPage("a3");
+      }
+    });
+    $("#a3LightboxClose").addEventListener("click", closeA3Lightbox);
+    $("#a3LightboxImage").addEventListener("click", () => {
+      $("#a3LightboxBody").classList.toggle("actual");
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeA3Lightbox();
+      }
+    });
+
+    $$(".menu button").forEach(button => {
+      button.addEventListener("click", () => {
+        goToPage(button.dataset.page);
+      });
+    });
+
+    $("#projectSelector").addEventListener(
+      "change",
+      event => {
+        state.activeProjectId =
+          event.target.value;
+
+        saveState();
+        renderAll();
+      }
+    );
+
+    $("#themeButton").addEventListener(
+      "click",
+      () => {
+        state.theme =
+          state.theme === "dark"
+            ? "light"
+            : "dark";
+
+        saveState();
+        setTheme();
+      }
+    );
+
+    $("#quickImportButton").addEventListener(
+      "click",
+      () => {
+        if (!activeProject()) {
+          alert(
+            "Selecione ou crie um projeto antes de importar."
+          );
+
+          goToPage("data");
+          return;
+        }
+
+        goToPage("data");
+        $("#excelInput").click();
+      }
+    );
+
+    $("#quickActivityButton").addEventListener(
+      "click",
+      () => openActivity()
+    );
+
+    $("#newActivityButton").addEventListener(
+      "click",
+      () => openActivity()
+    );
+
+    $("#closeActivityModal").addEventListener(
+      "click",
+      closeActivity
+    );
+
+    $("#cancelActivityButton").addEventListener(
+      "click",
+      closeActivity
+    );
+
+    $("#deleteActivityButton").addEventListener(
+      "click",
+      deleteActivity
+    );
+
+    $("#activityForm").addEventListener(
+      "submit",
+      saveActivity
+    );
+
+    [
+      "searchInput",
+      "pillarFilter",
+      "ownerFilter",
+      "statusFilter",
+      "typeFilter"
+    ].forEach(id => {
+      $("#" + id).addEventListener(
+        "input",
+        renderActivities
+      );
+
+      $("#" + id).addEventListener(
+        "change",
+        renderActivities
+      );
+    });
+
+    $("#clearFiltersButton").addEventListener(
+      "click",
+      () => {
+        $("#searchInput").value = "";
+        $("#pillarFilter").value = "";
+        $("#ownerFilter").value = "";
+        $("#statusFilter").value = "";
+        $("#typeFilter").value = "";
+
+        renderActivities();
+      }
+    );
+
+    $("#ganttScale").addEventListener(
+      "change",
+      renderGantt
+    );
+
+    $("#todayButton").addEventListener(
+      "click",
+      () => {
+        const todayLine =
+          document.querySelector(
+            ".gantt-today"
+          );
+
+        if (todayLine) {
+          todayLine.scrollIntoView({
+            behavior: "smooth",
+            inline: "center"
+          });
+        } else {
+          showToast(
+            "A data de hoje está fora do período exibido."
+          );
+        }
+      }
+    );
+
+    $("#onlyWithoutReason").addEventListener(
+      "change",
+      renderDelays
+    );
+
+    $("#exportDelaysButton").addEventListener(
+      "click",
+      exportDelays
+    );
+
+    $("#excelInput").addEventListener(
+      "change",
+      event => {
+        importWorkbook(
+          event.target.files[0]
+        );
+
+        event.target.value = "";
+      }
+    );
+
+    $("#createProjectButton").addEventListener(
+      "click",
+      openProjectModal
+    );
+
+    $("#closeProjectModal").addEventListener(
+      "click",
+      closeProjectModal
+    );
+
+    $("#cancelProjectButton").addEventListener(
+      "click",
+      closeProjectModal
+    );
+
+    $("#projectForm").addEventListener(
+      "submit",
+      createProject
+    );
+
+    $("#exportCsvButton").addEventListener(
+      "click",
+      exportCsv
+    );
+
+    $("#exportExcelButton").addEventListener(
+      "click",
+      exportExcel
+    );
+
+    $("#backupButton").addEventListener(
+      "click",
+      backupJson
+    );
+
+    $("#restoreButton").addEventListener(
+      "click",
+      () => $("#jsonInput").click()
+    );
+
+    $("#jsonInput").addEventListener(
+      "change",
+      event => {
+        restoreJson(
+          event.target.files[0]
+        );
+
+        event.target.value = "";
+      }
+    );
+
+    $("#activityModal").addEventListener(
+      "click",
+      event => {
+        if (
+          event.target.id === "activityModal"
+        ) {
+          closeActivity();
+        }
+      }
+    );
+
+    $("#projectModal").addEventListener(
+      "click",
+      event => {
+        if (
+          event.target.id === "projectModal"
+        ) {
+          closeProjectModal();
+        }
+      }
+    );
+
+    renderAll();
+    connectShared();
+  </script>
+</body>
+</html>
+
