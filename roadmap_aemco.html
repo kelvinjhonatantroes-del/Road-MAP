@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ROAD MAP — Gestão Integrada AEMCO</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --primary:#1f4e79;--primary-d:#173a5c;--accent:#2f7fc1;
+  --bg:#f4f6f8;--surface:#ffffff;--surface2:#f0f4f7;--border:#d9e0e6;
+  --text:#22313f;--muted:#687782;
+  --ok:#2f7d4d;--warn:#c78319;--bad:#b53832;--info:#3576a8;--none:#87949c;
+  --shadow:0 3px 14px rgba(31,54,72,.08);
+  --gl:300px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --primary:#5a9bd4;--primary-d:#0f1c28;--accent:#6fb1e8;
+    --bg:#10181f;--surface:#18232d;--surface2:#1f2c38;--border:#2c3b49;
+    --text:#e4ecf2;--muted:#93a4b2;
+    --ok:#52b07a;--warn:#e0a03a;--bad:#e5645d;--info:#5aa0d6;--none:#7d8b94;
+    --shadow:0 3px 14px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#5a9bd4;--primary-d:#0f1c28;--accent:#6fb1e8;
+  --bg:#10181f;--surface:#18232d;--surface2:#1f2c38;--border:#2c3b49;
+  --text:#e4ecf2;--muted:#93a4b2;
+  --ok:#52b07a;--warn:#e0a03a;--bad:#e5645d;--info:#5aa0d6;--none:#7d8b94;
+  --shadow:0 3px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);font-size:14px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+.hidden{display:none!important}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100%}
+.side{background:var(--primary-d);color:#e6eff6;padding:18px 12px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;align-self:start;height:100vh;overflow:auto}
+:root[data-theme="dark"] .side,:root:not([data-theme="light"]) .side{--sidefg:#e6eff6}
+.brand{padding:4px 8px 14px;border-bottom:1px solid rgba(255,255,255,.18)}
+.brand b{display:block;font-size:17px;letter-spacing:.3px;color:#fff}
+.brand span{font-size:12px;color:#b9cde0}
+.nav{display:grid;gap:5px}
+.nav button{background:transparent;color:#d7e5f1;text-align:left;padding:10px 12px;border-radius:8px;font-weight:600}
+.nav button:hover{background:rgba(255,255,255,.1)}
+.nav button.on{background:rgba(255,255,255,.18);color:#fff}
+.side-foot{margin-top:auto;font-size:12px;color:#b9cde0;line-height:1.45;display:grid;gap:8px}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top h1{font-size:19px;margin:0;margin-right:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:4px 10px;font-size:12px;font-weight:700;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.chip.live{color:var(--ok)}.chip.local{color:var(--warn)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.peers{display:flex;align-items:center}
+.peers img{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);margin-left:-7px;background:var(--surface2)}
+.peers img:first-child{margin-left:0}
+.peers .more{margin-left:4px;font-size:12px;color:var(--muted)}
+.wrap{padding:22px;max-width:1700px;width:100%;margin:0 auto}
+.page{display:none}.page.on{display:block}
+h2.pt{margin:0 0 4px;font-size:22px}
+p.ps{margin:0 0 18px;color:var(--muted)}
+.btn{border-radius:7px;padding:9px 13px;font-weight:700;background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn:hover{filter:brightness(.96)}
+.btn.p{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.sm{padding:5px 9px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.inp,.sel,.ta{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:7px;padding:9px 10px;outline:none}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.ta{min-height:76px;resize:vertical}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:14px}
+.bar .inp,.bar .sel{width:auto;min-width:150px}
+.bar .grow{flex:1;min-width:200px}
+.grid{display:grid;gap:14px}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow);padding:16px}
+.card h3{margin:0 0 12px;font-size:16px}
+.metric .l{color:var(--muted);font-size:12px;font-weight:700}
+.metric .v{display:block;margin-top:8px;font-size:28px;font-weight:800}
+.v.b{color:var(--primary)}.v.o{color:var(--warn)}.v.g{color:var(--ok)}.v.r{color:var(--bad)}
+.alert{padding:11px 14px;border-radius:8px;margin-bottom:14px;line-height:1.5;border:1px solid}
+.al-info{background:color-mix(in srgb,var(--info) 12%,transparent);border-color:color-mix(in srgb,var(--info) 35%,transparent)}
+.al-warn{background:color-mix(in srgb,var(--warn) 14%,transparent);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.al-bad{background:color-mix(in srgb,var(--bad) 13%,transparent);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.prog{height:8px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin:8px 0 3px}
+.prog i{display:block;height:100%;background:var(--accent)}
+.stack{display:flex;height:14px;border-radius:9px;overflow:hidden;background:var(--surface2)}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;font-size:12px;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.badge{display:inline-flex;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800;white-space:nowrap}
+.s0{background:color-mix(in srgb,var(--none) 20%,transparent);color:var(--muted)}
+.s1{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info)}
+.s2{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.s3{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.tw{overflow:auto;border:1px solid var(--border);border-radius:9px;max-height:68vh}
+table{width:100%;border-collapse:collapse;min-width:980px;background:var(--surface)}
+th,td{padding:9px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-size:13px}
+th{background:var(--surface2);position:sticky;top:0;z-index:1;font-size:12px;color:var(--muted)}
+tr:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.mut{color:var(--muted)}.small{font-size:12px}
+.empty{padding:34px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:9px;background:var(--surface)}
+.pc{cursor:pointer}.pc:hover{border-color:var(--accent)}
+.pc h3{color:var(--primary)}
+.row2{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.li:last-child{border:0}
+.editing{display:inline-block;margin-left:6px;font-size:11px;color:var(--warn);font-weight:800}
+
+/* gantt */
+.gscroll{overflow:auto;border:1px solid var(--border);border-radius:9px;background:var(--surface);max-height:72vh}
+.gbody{position:relative}
+.ghead,.grow2{display:flex}
+.ghead{position:sticky;top:0;z-index:4;background:var(--surface2);border-bottom:1px solid var(--border)}
+.glab{width:var(--gl);flex:none;position:sticky;left:0;z-index:3;background:var(--surface);border-right:1px solid var(--border);padding:7px 10px;overflow:hidden}
+.ghead .glab{background:var(--surface2);font-weight:800;z-index:5;display:flex;align-items:center}
+.glab .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.glab .t:hover{text-decoration:underline}
+.gtl{position:relative;flex:none;height:40px}
+.gtl.m{height:34px}
+.gm{position:absolute;top:0;bottom:0;border-left:1px solid var(--border);padding:9px 5px;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden}
+.grp .glab{background:var(--surface2);font-weight:800;cursor:pointer;color:var(--primary)}
+.grp .gtl{background:var(--surface2)}
+.gbar{position:absolute;top:11px;height:18px;border-radius:9px;min-width:6px;cursor:pointer;background:var(--none);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.gbar i{display:block;height:100%;background:rgba(255,255,255,.38)}
+.gbar.st1{background:var(--info)}.gbar.st2{background:var(--ok)}.gbar.st3{background:var(--bad)}
+.gbar:hover{filter:brightness(.88)}
+.gbar.sum{top:15px;height:9px;border-radius:2px;cursor:default;background:var(--primary)}
+.gorig{position:absolute;top:8px;width:0;height:24px;border-left:2px dashed var(--muted)}
+.glines{position:absolute;top:0;bottom:0;left:var(--gl);pointer-events:none;z-index:1}
+.glines u{position:absolute;top:0;bottom:0;border-left:1px solid var(--border);text-decoration:none}
+.glines u.today{border-left:2px solid var(--bad);z-index:2}
+.grow2{border-bottom:1px solid var(--border)}
+
+/* modal */
+.mb{position:fixed;inset:0;background:rgba(8,20,30,.6);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
+.modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:var(--surface);border-radius:13px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.mh{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:14px}
+.mh h2{margin:0;font-size:19px}
+.x{background:transparent;font-size:26px;color:var(--muted);line-height:1}
+.fg{margin-bottom:12px}
+.hist{max-height:150px;overflow:auto;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--surface2)}
+.hist div{padding:4px 0;border-bottom:1px solid var(--border)}.hist div:last-child{border:0}
+.toast{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));background:#1f2930;color:#fff;padding:11px 15px;border-radius:8px;z-index:80;max-width:90vw;box-shadow:var(--shadow)}
+.late-card{border-left:4px solid var(--bad)}
+.late-card .grid{margin-top:10px}
+.sp{margin-top:14px}
+@media (max-width:1000px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px}
+  .brand{border:0;padding:0 8px}
+  .nav{display:flex;overflow:auto;max-width:100%}
+  .nav button{white-space:nowrap}
+  .side-foot{display:none}
+  .g6{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .wrap{padding:14px}
+  .top{padding:10px 14px}
+  .g6,.g3,.g2{grid-template-columns:1fr 1fr}
+  .g2.stk{grid-template-columns:1fr}
+  .bar .inp,.bar .sel{width:100%}
+  :root{--gl:190px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><b>ROAD MAP AEMCO</b><span>Gestão Integrada Lean System</span></div>
+    <nav class="nav" id="nav">
+      <button data-page="dashboard" class="on">📊 Visão geral</button>
+      <button data-page="activities">📋 Atividades</button>
+      <button data-page="gantt">📅 Gráfico de Gantt</button>
+      <button data-page="pillars">👥 Pilares e líderes</button>
+      <button data-page="reports">⚠️ Atrasos e recuperação</button>
+      <button data-page="data">💾 Dados e exportação</button>
+    </nav>
+    <div class="side-foot">
+      <div id="sideFile">Nenhuma planilha carregada.</div>
+      <button class="btn sm" data-act="theme">Alternar tema claro/escuro</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1 id="topTitle">Visão geral</h1>
+      <div class="peers" id="peers" title="Pessoas com a página aberta agora"></div>
+      <span class="chip local" id="modeChip"><span class="dot"></span><span id="modeTxt">Carregando…</span></span>
+      <button class="btn p sm" data-act="pickFile" id="topImport">Importar Roadmap</button>
+    </header>
+
+    <main class="wrap">
+      <div id="roBanner" class="alert al-warn hidden">Você tem acesso somente leitura. Peça permissão de <b>Contribuidor</b> ao proprietário para atualizar atividades.</div>
+
+      <section id="page-dashboard" class="page on">
+        <h2 class="pt">Visão geral do projeto</h2>
+        <p class="ps">Resumo consolidado das atividades importadas das abas do Roadmap.</p>
+        <div id="dashAlerts"></div>
+        <div id="metrics" class="grid g6"></div>
+        <div class="card sp"><h3>Distribuição por status</h3><div id="dashStack"></div></div>
+        <div class="grid g2 stk sp">
+          <div class="card"><h3>Próximos vencimentos (14 dias)</h3><div id="dashDue"></div></div>
+          <div class="card"><h3>Atualizações recentes da equipe</h3><div id="dashRecent"></div></div>
+        </div>
+        <div class="card sp"><h3>Pilares do Roadmap</h3><div id="dashPillars" class="grid g3"></div></div>
+      </section>
+
+      <section id="page-activities" class="page">
+        <h2 class="pt">Gerenciamento de atividades</h2>
+        <p class="ps">Consulte, filtre e atualize todas as ações macro e tarefas de cada cronograma.</p>
+        <div class="card">
+          <div class="bar">
+            <div class="grow"><label for="aSearch">Pesquisar</label><input id="aSearch" class="inp" placeholder="Código, descrição ou responsável"></div>
+            <div><label for="aPillar">Pilar</label><select id="aPillar" class="sel"></select></div>
+            <div><label for="aResp">Responsável</label><select id="aResp" class="sel"></select></div>
+            <div><label for="aStatus">Status</label><select id="aStatus" class="sel"></select></div>
+            <div><label for="aType">Tipo</label><select id="aType" class="sel"><option value="">Todos</option><option>Ação Macro</option><option>Tarefa</option></select></div>
+            <div><label for="aSort">Ordenar</label><select id="aSort" class="sel"><option value="">Ordem do roadmap</option><option value="due">Prazo mais próximo</option><option value="status">Status</option></select></div>
+            <button class="btn" data-act="clearFilters">Limpar</button>
+            <button class="btn p" data-act="newActivity" id="btnNew">+ Nova atividade</button>
+          </div>
+          <div id="aCount" class="small mut" style="margin-bottom:8px"></div>
+          <div id="aTable"></div>
+        </div>
+      </section>
+
+      <section id="page-gantt" class="page">
+        <h2 class="pt">Gráfico de Gantt</h2>
+        <p class="ps">Visão temporal por pilar. Clique em uma barra ou no nome da atividade para atualizar status, progresso e prazos.</p>
+        <div class="card">
+          <div class="bar">
+            <div><label for="gPillar">Pilar</label><select id="gPillar" class="sel"></select></div>
+            <div><label for="gType">Tipo</label><select id="gType" class="sel"><option value="">Todos</option><option>Ação Macro</option><option>Tarefa</option></select></div>
+            <div><label for="gZoom">Escala</label><select id="gZoom" class="sel"><option value="1.4">Ano (compacta)</option><option value="3" selected>Trimestre</option><option value="6">Mês (detalhada)</option></select></div>
+            <button class="btn" data-act="ganttToday">Ir para hoje</button>
+            <button class="btn" data-act="ganttCollapse">Recolher pilares</button>
+            <button class="btn" data-act="ganttExpand">Expandir pilares</button>
+          </div>
+          <div class="legend" style="margin:0 0 10px">
+            <span><b style="background:var(--none)"></b>Não iniciado</span><span><b style="background:var(--info)"></b>Andamento</span>
+            <span><b style="background:var(--ok)"></b>Concluído</span><span><b style="background:var(--bad)"></b>Atrasado</span>
+            <span><b style="background:var(--bad);width:3px;height:12px;border-radius:0"></b>Hoje</span>
+            <span><b style="border-left:2px dashed var(--muted);width:0;height:12px;border-radius:0"></b>Prazo original (quando replanejado)</span>
+          </div>
+          <div id="gBox"></div>
+        </div>
+      </section>
+
+      <section id="page-pillars" class="page">
+        <h2 class="pt">Pilares e líderes</h2>
+        <p class="ps">Atualize os líderes sem alterar a planilha original. A mudança aparece para toda a equipe.</p>
+        <div id="pillarsBox"></div>
+      </section>
+
+      <section id="page-reports" class="page">
+        <h2 class="pt">Atrasos e planos de recuperação</h2>
+        <p class="ps">Registre justificativa, nova data e plano de recuperação diretamente nos cartões abaixo.</p>
+        <div class="bar">
+          <div><label for="lPillar">Pilar</label><select id="lPillar" class="sel"></select></div>
+          <label style="display:flex;gap:7px;align-items:center;margin:0 6px 10px;font-size:13px;color:var(--text)"><input type="checkbox" id="lNoJust"> Somente sem justificativa</label>
+          <button class="btn bad" data-act="exportLateCsv">Exportar atrasadas (CSV)</button>
+          <button class="btn p" data-act="exportXlsx">Exportar relatório completo (Excel)</button>
+        </div>
+        <div id="lSummary"></div>
+        <div id="lList"></div>
+      </section>
+
+      <section id="page-data" class="page">
+        <h2 class="pt">Dados e exportação</h2>
+        <p class="ps">Importe o Roadmap e exporte as alterações para compartilhar a planilha atualizada.</p>
+        <div class="grid g2 stk">
+          <div class="card">
+            <h3>Importar planilha do Roadmap</h3>
+            <p class="mut small">As abas com colunas de código, descrição, início e conclusão são detectadas automaticamente. Atualizações já registradas (status, justificativas, novas datas, planos) são preservadas ao reimportar.</p>
+            <button class="btn p" data-act="pickFile" id="dataImport">Selecionar arquivo Excel</button>
+            <div id="importResult" class="sp"></div>
+          </div>
+          <div class="card">
+            <h3>Exportar dados</h3>
+            <p class="mut small">Excel com todas as atividades, atrasos, líderes e uma aba por pilar. O backup JSON preserva tudo, inclusive o histórico.</p>
+            <div class="bar" style="margin:0">
+              <button class="btn ok" data-act="exportXlsx">Exportar Excel</button>
+              <button class="btn" data-act="exportCsv">Exportar CSV</button>
+              <button class="btn" data-act="exportJson">Backup JSON</button>
+              <button class="btn" data-act="pickJson" id="btnRestore">Restaurar backup</button>
+            </div>
+            <div id="dlNote" class="small mut"></div>
+          </div>
+        </div>
+        <div class="card sp"><h3>Informações do arquivo</h3><div id="dataSummary"></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<input type="file" id="fileXlsx" accept=".xlsx,.xls" class="hidden">
+<input type="file" id="fileJson" accept=".json" class="hidden">
+
+<div id="mb" class="mb hidden" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mh"><h2 id="mTitle">Editar atividade</h2><button class="x" data-act="closeModal" aria-label="Fechar">&times;</button></div>
+    <form id="mForm" autocomplete="off">
+      <input type="hidden" id="fId">
+      <div id="fInfo" class="alert al-info"></div>
+      <div id="fCustom" class="hidden">
+        <div class="grid g2 stk">
+          <div class="fg"><label for="fPillar">Pilar</label><select id="fPillar" class="sel"></select></div>
+          <div class="fg"><label for="fType">Tipo</label><select id="fType" class="sel"><option>Ação Macro</option><option>Tarefa</option></select></div>
+          <div class="fg"><label for="fCode">Código</label><input id="fCode" class="inp"></div>
+          <div class="fg"><label for="fRes">Recurso necessário</label><input id="fRes" class="inp"></div>
+          <div class="fg"><label for="fStart">Data de início</label><input id="fStart" type="date" class="inp"></div>
+          <div class="fg"><label for="fEnd">Previsão de conclusão</label><input id="fEnd" type="date" class="inp"></div>
+        </div>
+        <div class="fg"><label for="fDesc">Descrição</label><textarea id="fDesc" class="ta" style="min-height:56px"></textarea></div>
+      </div>
+      <div class="grid g3 stk">
+        <div class="fg"><label for="fStatus">Status</label><select id="fStatus" class="sel"></select></div>
+        <div class="fg"><label for="fProg">Progresso (%)</label><input id="fProg" type="number" min="0" max="100" class="inp"></div>
+        <div class="fg"><label for="fNew">Nova data de conclusão</label><input id="fNew" type="date" class="inp"></div>
+      </div>
+      <div class="fg"><label for="fResp">Responsável</label><input id="fResp" class="inp"></div>
+      <div id="fLateHint" class="alert al-bad hidden">Atividade atrasada: informe a justificativa, a nova data e o plano de recuperação.</div>
+      <div class="fg"><label for="fJust">Justificativa do atraso ou alteração</label><textarea id="fJust" class="ta" placeholder="Motivo, impacto e providências…"></textarea></div>
+      <div class="grid g2 stk">
+        <div class="fg"><label for="fRecResp">Responsável pela recuperação</label><input id="fRecResp" class="inp"></div>
+        <div></div>
+      </div>
+      <div class="fg"><label for="fRecPlan">Plano de recuperação</label><textarea id="fRecPlan" class="ta" placeholder="Ações para recuperar o prazo…"></textarea></div>
+      <div class="fg" id="fHistBox"><label>Histórico de alterações</label><div class="hist" id="fHist"></div></div>
+      <div class="row2" style="margin-top:16px">
+        <button type="button" class="btn bad" id="fDelete" data-act="deleteActivity">Excluir</button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button type="button" class="btn" data-act="closeModal">Cancelar</button>
+          <button type="submit" class="btn p" id="fSave">Salvar alterações</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ============ utilidades ============ */
+const STATUS = ["Não iniciado","Andamento","Concluído","Atrasado"];
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const txt = v => String(v ?? "").trim();
+const norm = v => String(v ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g,"").replace(/[+&'()/_-]/g,"");
+function hash(str){
+  let h1=0xdeadbeef,h2=0x41c6ce57;
+  for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);
+}
+function parseDate(v){
+  if(!v) return null;
+  if(v instanceof Date){ return isNaN(v)?null:new Date(v.getFullYear(),v.getMonth(),v.getDate()); }
+  const r=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(r)){const p=r.slice(0,10).split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(r)){const p=r.split("/");return new Date(+p[2],+p[1]-1,+p[0]);}
+  const d=new Date(r); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+/* datas vindas do SheetJS podem vir alguns minutos antes da meia-noite: +12h garante o dia certo */
+function excelDate(v){
+  if(v instanceof Date){ if(isNaN(v)) return null; const d=new Date(v.getTime()+12*3600*1000); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+  return parseDate(v);
+}
+function iso(v){
+  const d=parseDate(v); if(!d) return "";
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+const fmtD = v => { const d=parseDate(v); return d? d.toLocaleDateString("pt-BR") : "—"; };
+const fmtDT = v => { if(!v) return ""; const d=new Date(v); return isNaN(d)?"":d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); };
+const today = () => { const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()); };
+const DAY = 86400000;
+
+/* ============ estado ============ */
+const LS_KEY = "aemco-roadmap-v2";
+const S = {
+  page:"dashboard", mode:"local", canWrite:true, canAdmin:true, me:null,
+  pillars:{}, edits:{}, leaders:{}, meta:null,
+  cache:null, names:{}, peers:[], collapsed:new Set(), editing:null, loaded:{}, busy:false
+};
+let db=null, userNS=null, room=null, dl=null, resolveReady; 
+const ready = new Promise(r => resolveReady = r);
+
+/* ============ persistência ============ */
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw) return;
+    const d=JSON.parse(raw);
+    S.pillars=d.pillars||{}; S.edits=d.edits||{}; S.leaders=d.leaders||{}; S.meta=d.meta||null;
+  }catch(e){}
+}
+function saveLocal(){
+  try{ localStorage.setItem(LS_KEY,JSON.stringify({pillars:S.pillars,edits:S.edits,leaders:S.leaders,meta:S.meta})); }catch(e){}
+}
+function clean(o){ return JSON.parse(JSON.stringify(o)); }
+function dbError(e){
+  const c=e&&e.code;
+  if(c==="invalid_argument") toast("Sem permissão para gravar. Peça acesso de Contribuidor/Editor ao proprietário.");
+  else if(c==="quota_exceeded") toast("Limite de armazenamento atingido.");
+  else if(c==="resource_exhausted") toast("Muitas gravações seguidas. Aguarde alguns segundos.");
+  else toast("Falha ao sincronizar. Tente novamente.");
+}
+async function put(path,data){
+  if(db){ try{ await db.doc(path).set(clean(data)); return true; }catch(e){ dbError(e); return false; } }
+  saveLocal(); return true;
+}
+async function del(path){
+  if(db){ try{ await db.doc(path).delete(); return true; }catch(e){ dbError(e); return false; } }
+  saveLocal(); return true;
+}
+function dirty(){ S.cache=null; scheduleRender(); }
+
+/* ============ assinatura em tempo real ============ */
+function rebuildPillars(docs){
+  const groups={};
+  docs.forEach(d=>{ const x=d.data(); if(!x||!x.pillarId) return;
+    (groups[x.pillarId]=groups[x.pillarId]||[]).push({id:d.id,...x}); });
+  const out={};
+  for(const pid in groups){
+    const chunks=groups[pid].sort((a,b)=>(a.chunk||0)-(b.chunk||0));
+    const f=chunks[0];
+    out[pid]={id:pid,name:f.name,phase:f.phase,startDate:f.startDate,endDate:f.endDate,importedLeader:f.importedLeader||"",order:f.order||0,
+      activities:chunks.flatMap(c=>c.activities||[]),docIds:chunks.map(c=>c.id)};
+  }
+  S.pillars=out; S.loaded.pillars=1; dirty();
+}
+function subscribe(){
+  const err=e=>{ if(e&&e.code!=="revoked") toast("Conexão em tempo real interrompida."); };
+  db.collection("pillars").onSnapshot(s=>rebuildPillars(s.docs),err);
+  db.collection("edits").onSnapshot(s=>{ const m={}; s.docs.forEach(d=>m[d.id]=d.data()); S.edits=m; S.loaded.edits=1; resolveNames(Object.values(m).map(e=>e.updatedBy)); dirty(); },err);
+  db.collection("leaders").onSnapshot(s=>{ const m={}; s.docs.forEach(d=>m[d.id]=d.data()); S.leaders=m; S.loaded.leaders=1; dirty(); },err);
+  db.doc("meta/info").onSnapshot(s=>{ S.meta=s.exists?s.data():null; S.loaded.meta=1; dirty(); },err);
+}
+async function resolveNames(ids){
+  if(!userNS) return;
+  ids=[...new Set(ids.filter(Boolean))].filter(i=>!S.names[i]);
+  if(!ids.length) return;
+  try{
+    const ps=await userNS.profiles(ids); let ch=false;
+    ids.forEach(i=>{ const p=ps[i]; if(p){ S.names[i]={name:p.name||"",avatar:p.avatarUrl,color:p.color}; ch=true; } });
+    if(ch) scheduleRender();
+  }catch(e){}
+}
+const nameOf = id => id ? ((S.names[id]&&S.names[id].name)||"Alguém") : "Sistema";
+
+/* ============ modelo ============ */
+const pillarList = () => Object.values(S.pillars).sort((a,b)=>(a.order||0)-(b.order||0));
+const pick = (e,k,d) => (e && e[k]!==undefined && e[k]!==null) ? e[k] : d;
+function compose(p,b,e){
+  e=e||{};
+  return {id:b.id,pillarId:p.id,pillar:p.name,phase:p.phase,code:b.c,description:b.d,resource:b.r||"",
+    responsible:pick(e,"responsible",b.o||""),startDate:b.s,endDate:b.e,status:pick(e,"status",b.st||"Não iniciado"),
+    progress:pick(e,"progress",b.p||0),type:b.t==="T"?"Tarefa":"Ação Macro",newDate:e.newDate||"",justification:e.justification||"",
+    recoveryResponsible:e.recoveryResponsible||"",recoveryPlan:e.recoveryPlan||"",updatedAt:e.updatedAt||"",updatedBy:e.updatedBy||null,
+    history:e.history||[],custom:false};
+}
+function composeCustom(p,id,e){
+  return {id,pillarId:p.id,pillar:p.name,phase:p.phase,code:e.code||"",description:e.description||"",resource:e.resource||"",
+    responsible:e.responsible||"",startDate:e.startDate||"",endDate:e.endDate||"",status:e.status||"Não iniciado",progress:e.progress||0,
+    type:e.type||"Tarefa",newDate:e.newDate||"",justification:e.justification||"",recoveryResponsible:e.recoveryResponsible||"",
+    recoveryPlan:e.recoveryPlan||"",updatedAt:e.updatedAt||"",updatedBy:e.updatedBy||null,history:e.history||[],custom:true};
+}
+function acts(){
+  if(S.cache) return S.cache;
+  const list=pillarList(), out=[];
+  list.forEach(p=>p.activities.forEach(b=>{ const e=S.edits[b.id]; if(e&&e.deleted) return; out.push(compose(p,b,e)); }));
+  Object.entries(S.edits).forEach(([id,e])=>{ if(!e.custom||e.deleted) return; const p=S.pillars[e.pillarId]; if(p) out.push(composeCustom(p,id,e)); });
+  const idx={}; list.forEach((p,i)=>idx[p.id]=i);
+  out.sort((a,b)=>idx[a.pillarId]-idx[b.pillarId]);
+  return S.cache=out;
+}
+function dueOf(a){ return parseDate(a.newDate)||parseDate(a.endDate); }
+function effStatus(a){
+  if(a.status==="Concluído") return "Concluído";
+  const due=dueOf(a), t=today();
+  if(due && due<t) return "Atrasado";
+  if(a.status==="Atrasado") return a.newDate ? "Andamento" : "Atrasado";
+  return a.status||"Não iniciado";
+}
+const stIdx = s => s==="Andamento"?1:s==="Concluído"?2:s==="Atrasado"?3:0;
+const badge = s => `<span class="badge s${stIdx(s)}">${esc(s)}</span>`;
+function leaderOf(p){ const l=S.leaders[p.id]; return l && l.name!==undefined ? l.name : (p.importedLeader||""); }
+function pillarProgress(p){
+  const rows=acts().filter(a=>a.pillarId===p.id); if(!rows.length) return 0;
+  const macros=rows.filter(a=>a.type==="Ação Macro"); const base=macros.length?macros:rows;
+  return Math.round(base.reduce((s,a)=>s+Number(a.progress||0),0)/base.length);
+}
+
+/* ============ importação do Excel ============ */
+function getPhase(name){
+  const n=norm(name);
+  if(n.includes("gestaonogenba")||n.includes("trabalhopadronizado5s")||n.includes("manutencaoautonoma")||n.includes("gestaodamudanca")) return "Estabilidade";
+  if(n.includes("jidoka")||n.includes("fluxopuxadoenivelado")) return "Estabilização";
+  return "Fluxo e Custos";
+}
+function defaultLeader(name){
+  const m={gestaonogenba:"Cristiano Silva",trabalhopadronizado5s:"Laudevino Livramento",jidoka:"Sebastião Ribeiro",
+    fluxopuxadoenivelado:"Thiago Zanquini",fluxocontinuo:"Rafael Sposito",gestaodefluxo3rs:"Gilberto Piovani",desdobramentodecustos:"Leila Bamberg"};
+  return m[norm(name)]||"";
+}
+function findColumn(headers,names){
+  const hs=headers.map(h=>({o:h,n:norm(h)}));
+  for(const nm of names){ const t=norm(nm); const x=hs.find(h=>h.n===t); if(x) return x.o; }
+  for(const nm of names){ const t=norm(nm); const x=hs.find(h=>h.n&&h.n.includes(t)); if(x) return x.o; }
+  return null;
+}
+function findHeaderRow(rows){
+  for(let i=0;i<Math.min(rows.length,35);i++){
+    const t=rows[i].map(norm).join("|");
+    if(t.includes("codigo")&&(t.includes("acaomacro")||t.includes("tarefa")||t.includes("descricao"))&&(t.includes("datadeinicio")||t.includes("inicio"))&&(t.includes("previsaodeconclusao")||t.includes("conclusao"))) return i;
+  }
+  return -1;
+}
+function normStatus(v){ const t=txt(v); if(t==="Rollout planejado") return "Não iniciado"; return STATUS.includes(t)?t:"Não iniciado"; }
+function normProgress(v,st){
+  if(v===null||v===undefined||v==="") return st==="Concluído"?100:0;
+  let r=Number(v); if(Number.isNaN(r)) return st==="Concluído"?100:0;
+  if(r>0&&r<=1) r*=100; return Math.max(0,Math.min(100,Math.round(r)));
+}
+function isLegend(d){ const v=norm(d); return v.startsWith("planejado")||v.startsWith("emandamento")||v.startsWith("atraso")||v.startsWith("concluido"); }
+function parseWorkbook(wb){
+  const pillars=[]; let order=0;
+  wb.SheetNames.forEach(sheet=>{
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,raw:true,defval:"",cellDates:true});
+    const hi=findHeaderRow(rows); if(hi<0) return;
+    const headers=rows[hi].map(txt);
+    const col=(names)=>findColumn(headers,names);
+    const cCode=col(["Código","Codigo"]), cDesc=col(["Ação Macro / Tarefa","Ação Macro","Descrição","Tarefa"]),
+      cRes=col(["Recurso Necessário","Recurso Necessario","Recurso"]), cResp=col(["Responsável","Responsavel"]),
+      cStart=col(["Data de Início","Data de Inicio","Início","Inicio"]), cEnd=col(["Previsão de Conclusão","Previsao de Conclusao","Conclusão","Conclusao"]),
+      cStatus=col(["Status"]), cDone=col(["Concluído?","Concluido?"]), cProg=col(["Progresso"]), cLine=col(["Linha"]);
+    if(!cCode||!cDesc||!cStart||!cEnd) return;
+    const ix=n=>headers.indexOf(n), pid="p_"+hash(sheet);
+    const list=[], macroSeen=new Set(), dup={};
+    rows.slice(hi+1).forEach(row=>{
+      const code=txt(row[ix(cCode)]);
+      const desc=txt(row[ix(cDesc)]).replace(/^[•●▪]\s*/,"");
+      const s=iso(excelDate(row[ix(cStart)])), e=iso(excelDate(row[ix(cEnd)]));
+      if(!code||!desc||!s||!e||isLegend(desc)) return;
+      const line=cLine?txt(row[ix(cLine)]).toLowerCase():"";
+      const isTask=line==="tarefa"||code.includes(".");
+      if(line==="realizado"&&!isTask) return;
+      let st=cStatus?normStatus(row[ix(cStatus)]):"Não iniciado";
+      const done=cDone?norm(row[ix(cDone)]):"";
+      if(["sim","s","x","true","1","yes","concluido"].includes(done)) st="Concluído";
+      const prog=normProgress(cProg?row[ix(cProg)]:null,st);
+      const key=[code,desc,s,e].join("|");
+      if(!isTask){ if(macroSeen.has(key)) return; macroSeen.add(key); }
+      const dk=code+"|"+(isTask?"T":"M"); dup[dk]=(dup[dk]||0)+1;
+      list.push({id:"a_"+hash(sheet)+"_"+hash(dk+"|"+dup[dk]),c:code,d:desc,r:cRes?txt(row[ix(cRes)]):"",o:cResp?txt(row[ix(cResp)]):"",
+        s,e,st,p:st==="Concluído"?100:prog,t:isTask?"T":"M"});
+    });
+    if(!list.length) return;
+    const starts=list.map(a=>a.s).sort(), ends=list.map(a=>a.e).sort();
+    pillars.push({id:pid,name:sheet,phase:getPhase(sheet),startDate:starts[0],endDate:ends[ends.length-1],importedLeader:defaultLeader(sheet),order:order++,activities:list});
+  });
+  return pillars;
+}
+async function importFile(file){
+  await ready;
+  if(!window.XLSX){ toast("Biblioteca de Excel não carregada. Verifique a conexão."); return; }
+  if(!S.canAdmin){ toast("Apenas o proprietário/editores podem importar o Roadmap."); return; }
+  const box=$("#importResult"); box.innerHTML='<div class="alert al-info">Lendo planilha…</div>';
+  try{
+    const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});
+    const pillars=parseWorkbook(wb);
+    if(!pillars.length){ box.innerHTML='<div class="alert al-bad">Nenhuma aba com colunas de código, descrição, início e conclusão foi encontrada.</div>'; return; }
+    await writeBase(pillars,file.name,msg=>{ box.innerHTML=`<div class="alert al-info">${esc(msg)}</div>`; });
+    const ids=new Set(pillars.flatMap(p=>p.activities.map(a=>a.id)));
+    const orphan=Object.entries(S.edits).filter(([id,e])=>!e.custom&&!ids.has(id)).length;
+    const total=pillars.reduce((s,p)=>s+p.activities.length,0);
+    box.innerHTML=`<div class="alert al-info">Importação concluída.<br>Pilares: <b>${pillars.length}</b> · Atividades: <b>${total}</b>${orphan?`<br>${orphan} atualização(ões) antiga(s) não encontraram mais a atividade correspondente e ficaram ocultas.`:""}</div>`;
+    toast("Roadmap importado com sucesso.");
+  }catch(err){ console.error(err); box.innerHTML='<div class="alert al-bad">Não foi possível ler o arquivo. Confirme se é um .xlsx válido.</div>'; }
+}
+async function writeBase(pillars,fileName,progress){
+  const meta={fileName,importedAt:new Date().toISOString(),importedBy:S.me&&S.me.id||null,count:pillars.reduce((s,p)=>s+p.activities.length,0)};
+  if(!db){
+    const m={}; pillars.forEach(p=>m[p.id]=p); S.pillars=m; S.meta=meta; saveLocal(); dirty(); return;
+  }
+  const keep=new Set(); let n=0; const CH=200; const jobs=[];
+  pillars.forEach(p=>{ for(let i=0,c=0;i<p.activities.length;i+=CH,c++){ jobs.push({id:p.id+"_"+c,p,c,acts:p.activities.slice(i,i+CH)}); } });
+  for(const j of jobs){
+    progress&&progress(`Gravando ${++n} de ${jobs.length}…`);
+    keep.add(j.id);
+    const ok=await put("pillars/"+j.id,{pillarId:j.p.id,name:j.p.name,phase:j.p.phase,startDate:j.p.startDate,endDate:j.p.endDate,importedLeader:j.p.importedLeader,order:j.p.order,chunk:j.c,activities:j.acts});
+    if(!ok) throw new Error("write");
+  }
+  const old=Object.values(S.pillars).flatMap(p=>p.docIds||[]).filter(id=>!keep.has(id));
+  for(const id of old) await del("pillars/"+id);
+  await put("meta/info",meta);
+}
+
+/* ============ edição ============ */
+const LABELS={status:"Status",progress:"Progresso",responsible:"Responsável",newDate:"Nova data",justification:"Justificativa",recoveryResponsible:"Resp. recuperação",recoveryPlan:"Plano de recuperação"};
+function diffText(a,patch){
+  const out=[];
+  for(const k in LABELS){
+    if(patch[k]===undefined) continue;
+    const before=a?a[k]:"", after=patch[k];
+    if(String(before??"")===String(after??"")) continue;
+    if(k==="justification"||k==="recoveryPlan") out.push(LABELS[k]+" atualizado(a)");
+    else out.push(`${LABELS[k]}: ${k==="newDate"?fmtD(before):(before||"—")} → ${k==="newDate"?fmtD(after):(after||"—")}`);
+  }
+  return out.join("; ");
+}
+async function saveEdit(id,patch,hist){
+  if(!S.canWrite){ toast("Você não tem permissão para atualizar."); return false; }
+  const cur=S.edits[id]||{};
+  const next={...cur,...patch,updatedAt:new Date().toISOString(),updatedBy:(S.me&&S.me.id)||null};
+  if(hist){ const h=(cur.history||[]).slice(-19); h.push({at:next.updatedAt,by:next.updatedBy,t:hist}); next.history=h; }
+  const prev=S.edits[id]; S.edits[id]=next; S.cache=null;
+  const ok=await put("edits/"+id,next);
+  if(!ok){ if(prev) S.edits[id]=prev; else delete S.edits[id]; S.cache=null; }
+  scheduleRender();
+  return ok;
+}
+function normalizePatch(patch,a){
+  const st=patch.status!==undefined?patch.status:a.status;
+  let pr=patch.progress!==undefined?patch.progress:a.progress;
+  pr=Math.max(0,Math.min(100,Math.round(Number(pr)||0)));
+  let status=st;
+  if(status==="Concluído") pr=100;
+  else if(status==="Não iniciado"&&pr>0) status="Andamento";
+  if(pr===100&&status!=="Concluído") status="Concluído";
+  return {...patch,status,progress:pr};
+}
+
+/* ============ filtros ============ */
+function setOptions(sel,values,first,keep){
+  const cur=keep!==undefined?keep:sel.value;
+  const html=`<option value="">${first}</option>`+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+  if(sel.dataset.sig===html) return; sel.dataset.sig=html; sel.innerHTML=html; sel.value=values.includes(cur)?cur:"";
+}
+function renderFilters(){
+  const names=pillarList().map(p=>p.name);
+  setOptions($("#aPillar"),names,"Todos os pilares"); setOptions($("#gPillar"),names,"Todos os pilares"); setOptions($("#lPillar"),names,"Todos os pilares");
+  setOptions($("#aResp"),[...new Set(acts().map(a=>a.responsible).filter(Boolean))].sort(),"Todos");
+  setOptions($("#aStatus"),STATUS,"Todos");
+}
+function filteredActs(){
+  const q=norm($("#aSearch").value), p=$("#aPillar").value, r=$("#aResp").value, s=$("#aStatus").value, t=$("#aType").value, so=$("#aSort").value;
+  let l=acts().filter(a=>(!q||norm(a.code).includes(q)||norm(a.description).includes(q)||norm(a.responsible).includes(q))&&(!p||a.pillar===p)&&(!r||a.responsible===r)&&(!s||effStatus(a)===s)&&(!t||a.type===t));
+  if(so==="due") l=[...l].sort((a,b)=>(dueOf(a)||0)-(dueOf(b)||0));
+  if(so==="status") l=[...l].sort((a,b)=>stIdx(effStatus(b))-stIdx(effStatus(a)));
+  return l;
+}
+
+/* ============ renderização ============ */
+let rafId=0, pendingDefer=false;
+function scheduleRender(){
+  if(rafId) return;
+  rafId=requestAnimationFrame(()=>{ rafId=0;
+    const ae=document.activeElement;
+    if(ae&&ae.matches&&ae.matches("input,textarea,select")&&ae.closest("#lList,#pillarsBox")){ pendingDefer=true; renderChrome(); return; }
+    renderAll();
+  });
+}
+document.addEventListener("focusout",()=>{ setTimeout(()=>{ if(pendingDefer){ const ae=document.activeElement; if(!(ae&&ae.matches&&ae.matches("input,textarea,select")&&ae.closest("#lList,#pillarsBox"))){ pendingDefer=false; renderAll(); } } },150); });
+
+function renderChrome(){
+  const chip=$("#modeChip"), has=Object.keys(S.pillars).length>0;
+  if(S.mode==="shared"){ chip.className="chip live"; $("#modeTxt").textContent="Tempo real · compartilhado"; }
+  else if(S.mode==="local"){ chip.className="chip local"; $("#modeTxt").textContent="Modo local (sem compartilhamento)"; }
+  else { chip.className="chip"; $("#modeTxt").textContent="Conectando…"; }
+  $("#sideFile").textContent=S.meta&&S.meta.fileName?`${S.meta.fileName} — ${acts().length} atividades`:"Nenhuma planilha carregada.";
+  $("#roBanner").classList.toggle("hidden",S.canWrite);
+  $("#topImport").classList.toggle("hidden",!S.canAdmin);
+  $("#btnNew").classList.toggle("hidden",!S.canWrite||!has);
+  $("#dataImport").disabled=!S.canAdmin; $("#btnRestore").disabled=!S.canAdmin;
+}
+function renderAll(){
+  renderChrome(); renderFilters();
+  const f={dashboard:renderDashboard,activities:renderActivities,gantt:renderGantt,pillars:renderPillars,reports:renderReports,data:renderData}[S.page];
+  f&&f(); renderPeers();
+}
+function waiting(){
+  return S.mode==="shared" && !(S.loaded.pillars&&S.loaded.edits&&S.loaded.leaders&&S.loaded.meta);
+}
+function emptyBox(){
+  if(waiting()) return '<div class="empty">Sincronizando dados…</div>';
+  return S.canAdmin?'<div class="empty">Nenhum Roadmap carregado. Use <b>Importar Roadmap</b> para começar.</div>':'<div class="empty">Aguardando o proprietário importar o Roadmap.</div>';
+}
+
+function renderDashboard(){
+  const A=acts(), c={0:0,1:0,2:0,3:0}; A.forEach(a=>c[stIdx(effStatus(a))]++);
+  const avg=A.length?Math.round(A.reduce((s,a)=>s+Number(a.progress||0),0)/A.length):0;
+  $("#metrics").innerHTML=`
+    <div class="card metric"><span class="l">Total de atividades</span><span class="v b">${A.length}</span></div>
+    <div class="card metric"><span class="l">Não iniciadas</span><span class="v">${c[0]}</span></div>
+    <div class="card metric"><span class="l">Em andamento</span><span class="v o">${c[1]}</span></div>
+    <div class="card metric"><span class="l">Concluídas</span><span class="v g">${c[2]}</span></div>
+    <div class="card metric"><span class="l">Atrasadas</span><span class="v r">${c[3]}</span></div>
+    <div class="card metric"><span class="l">Progresso médio</span><span class="v b">${avg}%</span></div>`;
+  let al="";
+  if(!A.length) al=`<div class="alert al-warn">${S.canAdmin?"Nenhuma atividade carregada. Importe a planilha do Roadmap para iniciar o acompanhamento.":"Nenhuma atividade carregada ainda."}</div>`;
+  if(c[3]) al+=`<div class="alert al-bad"><b>${c[3]}</b> atividade(s) atrasada(s). <a href="#" data-act="goto" data-page="reports">Registrar justificativas e planos de recuperação →</a></div>`;
+  $("#dashAlerts").innerHTML=al;
+  const tot=A.length||1, col=["var(--none)","var(--info)","var(--ok)","var(--bad)"];
+  $("#dashStack").innerHTML=A.length?`<div class="stack">${[0,1,2,3].map(i=>`<i style="width:${c[i]/tot*100}%;background:${col[i]}"></i>`).join("")}</div>
+    <div class="legend">${STATUS.map((s,i)=>`<span><b style="background:${col[i]}"></b>${s}: ${c[i]}</span>`).join("")}</div>`:'<div class="mut">Sem dados.</div>';
+  const t=today(), lim=new Date(t.getTime()+14*DAY);
+  const due=A.filter(a=>{ if(effStatus(a)==="Concluído") return false; const d=dueOf(a); return d&&d>=t&&d<=lim; }).sort((a,b)=>dueOf(a)-dueOf(b)).slice(0,8);
+  $("#dashDue").innerHTML=due.length?due.map(a=>`<div class="li"><span><b>${esc(a.code)}</b> ${esc(a.description.slice(0,70))}<br><span class="small mut">${esc(a.pillar)}</span></span><span class="small">${fmtD(dueOf(a))}</span></div>`).join(""):'<div class="mut">Nenhum vencimento nos próximos 14 dias.</div>';
+  const rec=A.filter(a=>a.updatedAt).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)).slice(0,8);
+  $("#dashRecent").innerHTML=rec.length?rec.map(a=>`<div class="li"><span><b>${esc(a.code)}</b> ${esc(a.description.slice(0,60))}<br><span class="small mut">${esc(nameOf(a.updatedBy))} · ${esc(fmtDT(a.updatedAt))}</span></span>${badge(effStatus(a))}</div>`).join(""):'<div class="mut">Nenhuma atualização registrada ainda.</div>';
+  const P=pillarList();
+  $("#dashPillars").innerHTML=P.length?P.map(p=>{
+    const pr=pillarProgress(p), rows=A.filter(a=>a.pillarId===p.id), late=rows.filter(a=>effStatus(a)==="Atrasado").length;
+    return `<div class="card pc" data-act="openPillar" data-id="${esc(p.id)}"><h3>${esc(p.name)}</h3>
+      <div class="small mut" style="line-height:1.7"><div><b>Fase:</b> ${esc(p.phase)}</div><div><b>Líder:</b> ${esc(leaderOf(p)||"Não definido")}</div>
+      <div><b>Atividades:</b> ${rows.length}${late?` · <span style="color:var(--bad)"><b>${late} atrasada(s)</b></span>`:""}</div>
+      <div><b>Período:</b> ${fmtD(p.startDate)} a ${fmtD(p.endDate)}</div></div>
+      <div class="prog"><i style="width:${pr}%"></i></div><span class="small mut">${pr}% de progresso médio (ações macro)</span></div>`;
+  }).join(""):emptyBox();
+}
+
+function renderActivities(){
+  const L=filteredActs(), MAX=400;
+  $("#aCount").textContent=L.length?`Exibindo ${Math.min(L.length,MAX)} de ${L.length} atividade(s)`+(L.length>MAX?" — refine os filtros para ver as demais.":""):"";
+  if(!L.length){ $("#aTable").innerHTML=acts().length?'<div class="empty">Nenhuma atividade corresponde aos filtros.</div>':emptyBox(); return; }
+  $("#aTable").innerHTML=`<div class="tw"><table><thead><tr><th>Pilar</th><th>Código</th><th>Tipo</th><th>Descrição</th><th>Responsável</th><th>Início</th><th>Conclusão</th><th>Status</th><th>Progresso</th><th></th></tr></thead><tbody>
+  ${L.slice(0,MAX).map(a=>{ const st=effStatus(a), ed=editorBadge(a.id);
+    return `<tr><td>${esc(a.pillar)}</td><td><b>${esc(a.code)}</b>${a.custom?' <span class="small mut">(manual)</span>':""}</td><td>${esc(a.type)}</td>
+    <td>${esc(a.description)}${ed}</td><td>${esc(a.responsible||"Não definido")}</td><td>${fmtD(a.startDate)}</td>
+    <td>${fmtD(a.newDate||a.endDate)}${a.newDate?'<br><span class="small mut">nova data</span>':""}</td><td>${badge(st)}</td>
+    <td style="min-width:100px"><div class="prog"><i style="width:${a.progress||0}%"></i></div><span class="small">${a.progress||0}%</span></td>
+    <td>${S.canWrite?`<button class="btn p sm" data-act="edit" data-id="${esc(a.id)}">Editar</button>`:`<button class="btn sm" data-act="edit" data-id="${esc(a.id)}">Ver</button>`}</td></tr>`;}).join("")}
+  </tbody></table></div>`;
+}
+function editorBadge(id){
+  const n=[]; S.peers.forEach(p=>{ if(!p.isMe&&p.presence&&p.presence.editing===id) n.push(nameOf(p.by)); });
+  return n.length?`<span class="editing">✎ ${esc([...new Set(n)].join(", "))} editando</span>`:"";
+}
+
+/* ---- Gantt ---- */
+function renderGantt(){
+  const box=$("#gBox"), pf=$("#gPillar").value, tf=$("#gType").value;
+  const L=acts().filter(a=>(!pf||a.pillar===pf)&&(!tf||a.type===tf)&&parseDate(a.startDate)&&dueOf(a));
+  if(!L.length){ box.innerHTML=acts().length?'<div class="empty">Nenhuma atividade para os filtros escolhidos.</div>':emptyBox(); return; }
+  const ppd=Number($("#gZoom").value)||3, t=today();
+  let min=new Date(Math.min(...L.map(a=>parseDate(a.startDate).getTime()))), max=new Date(Math.max(...L.map(a=>dueOf(a).getTime())));
+  min=new Date(min.getFullYear(),min.getMonth(),1); max=new Date(max.getFullYear(),max.getMonth()+1,0);
+  const X=d=>Math.round((d-min)/DAY*ppd), W=X(new Date(max.getTime()+DAY));
+  const MN=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  let months="", lines="";
+  for(let c=new Date(min);c<=max;c=new Date(c.getFullYear(),c.getMonth()+1,1)){
+    const nx=new Date(c.getFullYear(),c.getMonth()+1,1), l=X(c), w=X(nx)-l;
+    months+=`<div class="gm" style="left:${l}px;width:${w}px">${MN[c.getMonth()]}/${String(c.getFullYear()).slice(-2)}</div>`;
+    lines+=`<u style="left:${l}px"></u>`;
+  }
+  if(t>=min&&t<=max) lines+=`<u class="today" style="left:${X(t)}px" title="Hoje"></u>`;
+  const groups={}; L.forEach(a=>(groups[a.pillarId]=groups[a.pillarId]||[]).push(a));
+  let rows="";
+  pillarList().forEach(p=>{
+    const g=groups[p.id]; if(!g) return;
+    const s=new Date(Math.min(...g.map(a=>parseDate(a.startDate).getTime()))), e=new Date(Math.max(...g.map(a=>dueOf(a).getTime())));
+    const col=S.collapsed.has(p.id);
+    rows+=`<div class="grow2 grp"><div class="glab" data-act="toggleGroup" data-id="${esc(p.id)}">${col?"▸":"▾"} ${esc(p.name)} <span class="small mut">(${g.length})</span></div>
+      <div class="gtl" style="width:${W}px"><div class="gbar sum" style="left:${X(s)}px;width:${Math.max(6,X(new Date(e.getTime()+DAY))-X(s))}px"></div></div></div>`;
+    if(col) return;
+    g.forEach(a=>{
+      const st=effStatus(a), s0=parseDate(a.startDate), e0=dueOf(a), w=Math.max(6,X(new Date(e0.getTime()+DAY))-X(s0));
+      const orig=a.newDate&&parseDate(a.endDate)?`<div class="gorig" style="left:${X(new Date(parseDate(a.endDate).getTime()+DAY))}px" title="Prazo original: ${fmtD(a.endDate)}"></div>`:"";
+      rows+=`<div class="grow2"><div class="glab"><div class="t" data-act="edit" data-id="${esc(a.id)}" title="${esc(a.code+" — "+a.description)}"><b>${esc(a.code)}</b> ${esc(a.description)}</div>
+        <div class="small mut" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.responsible||"Sem responsável")} · ${st}</div></div>
+        <div class="gtl" style="width:${W}px">${orig}<div class="gbar st${stIdx(st)}" data-act="edit" data-id="${esc(a.id)}" style="left:${X(s0)}px;width:${w}px"
+        title="${esc(a.code+" — "+a.description+"\n"+fmtD(a.startDate)+" a "+fmtD(e0)+" · "+(a.progress||0)+"%")}"><i style="width:${a.progress||0}%"></i></div></div></div>`;
+    });
+  });
+  box.innerHTML=`<div class="gscroll" id="gScroll"><div class="gbody" style="width:calc(var(--gl) + ${W}px)">
+    <div class="ghead"><div class="glab">Atividade</div><div class="gtl m" style="width:${W}px">${months}</div></div>
+    <div class="glines" style="width:${W}px">${lines}</div>${rows}</div></div>`;
+  box.dataset.x=X(t);
+}
+
+/* ---- Pilares ---- */
+function renderPillars(){
+  const P=pillarList(); if(!P.length){ $("#pillarsBox").innerHTML=emptyBox(); return; }
+  $("#pillarsBox").innerHTML=`<div class="tw"><table><thead><tr><th>Pilar</th><th>Fase</th><th>Período</th><th>Atividades</th><th>Atrasadas</th><th>Progresso</th><th style="min-width:220px">Líder do pilar</th><th></th></tr></thead><tbody>
+  ${P.map(p=>{ const rows=acts().filter(a=>a.pillarId===p.id), late=rows.filter(a=>effStatus(a)==="Atrasado").length, pr=pillarProgress(p);
+    return `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.phase)}</td><td>${fmtD(p.startDate)} a ${fmtD(p.endDate)}</td><td>${rows.length}</td>
+    <td>${late?`<span class="badge s3">${late}</span>`:"0"}</td><td style="min-width:110px"><div class="prog"><i style="width:${pr}%"></i></div><span class="small">${pr}%</span></td>
+    <td><input class="inp" data-leader="${esc(p.id)}" value="${esc(leaderOf(p))}" placeholder="Não definido" ${S.canAdmin?"":"disabled"}></td>
+    <td>${S.canAdmin?`<button class="btn ok sm" data-act="saveLeader" data-id="${esc(p.id)}">Salvar</button>`:""}</td></tr>`; }).join("")}
+  </tbody></table></div>${S.canAdmin?"":'<p class="small mut">Somente o proprietário/editores podem alterar líderes.</p>'}`;
+}
+
+/* ---- Atrasos ---- */
+function lateList(){
+  const p=$("#lPillar").value, nj=$("#lNoJust").checked;
+  return acts().filter(a=>effStatus(a)==="Atrasado"&&(!p||a.pillar===p)&&(!nj||!a.justification));
+}
+function renderReports(){
+  const all=acts().filter(a=>effStatus(a)==="Atrasado"), L=lateList();
+  const noJ=all.filter(a=>!a.justification).length, noD=all.filter(a=>!a.newDate).length, noP=all.filter(a=>!a.recoveryPlan).length;
+  $("#lSummary").innerHTML=`<div class="grid g3 stk" style="margin-bottom:14px">
+    <div class="card metric"><span class="l">Atividades atrasadas</span><span class="v r">${all.length}</span></div>
+    <div class="card metric"><span class="l">Sem justificativa</span><span class="v o">${noJ}</span></div>
+    <div class="card metric"><span class="l">Sem nova data · sem plano</span><span class="v o">${noD} · ${noP}</span></div></div>`;
+  if(!L.length){ $("#lList").innerHTML=all.length?'<div class="empty">Nenhuma atividade atende ao filtro.</div>':'<div class="alert al-info">Não existem atividades atrasadas no momento.</div>'; return; }
+  $("#lList").innerHTML=L.slice(0,150).map(a=>{
+    const ro=S.canWrite?"":"disabled", days=Math.max(0,Math.round((today()-(dueOf(a)))/DAY));
+    return `<div class="card late-card sp" data-late="${esc(a.id)}">
+      <div class="row2"><div><b>${esc(a.code)}</b> — ${esc(a.description)}${editorBadge(a.id)}<br><span class="small mut">${esc(a.pillar)} · Resp.: ${esc(a.responsible||"Não definido")} · Prazo ${fmtD(a.newDate||a.endDate)} · ${days} dia(s) de atraso</span></div>${S.canWrite?`<button class="btn sm" data-act="edit" data-id="${esc(a.id)}">Abrir</button>`:""}</div>
+      <div class="grid g2 stk"><div><label>Nova data de conclusão</label><input type="date" class="inp l-date" value="${esc(a.newDate)}" ${ro}></div>
+      <div><label>Responsável pela recuperação</label><input class="inp l-rr" value="${esc(a.recoveryResponsible)}" ${ro}></div>
+      <div><label>Justificativa</label><textarea class="ta l-just" ${ro}>${esc(a.justification)}</textarea></div>
+      <div><label>Plano de recuperação</label><textarea class="ta l-plan" ${ro}>${esc(a.recoveryPlan)}</textarea></div></div>
+      ${S.canWrite?`<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn ok sm" data-act="done" data-id="${esc(a.id)}">Marcar como concluída</button><button class="btn p sm" data-act="saveLate" data-id="${esc(a.id)}">Salvar registro</button></div>`:""}</div>`;
+  }).join("")+(L.length>150?'<p class="small mut">Mostrando 150 itens. Use os filtros para refinar.</p>':"");
+}
+
+/* ---- Dados ---- */
+function renderData(){
+  const A=acts(), c={0:0,1:0,2:0,3:0}; A.forEach(a=>c[stIdx(effStatus(a))]++);
+  $("#dataSummary").innerHTML=`<p><b>Arquivo:</b> ${esc(S.meta&&S.meta.fileName||"Nenhum")}</p>
+   <p><b>Última importação:</b> ${S.meta&&S.meta.importedAt?esc(new Date(S.meta.importedAt).toLocaleString("pt-BR"))+(S.meta.importedBy?" por "+esc(nameOf(S.meta.importedBy)):""):"Nenhuma"}</p>
+   <p><b>Pilares:</b> ${pillarList().length} · <b>Atividades:</b> ${A.length}</p>
+   <p><b>Distribuição:</b> ${STATUS.map((s,i)=>`${s}: <b>${c[i]}</b>`).join(" · ")}</p>`;
+  $("#dlNote").textContent=dl?"":"Os downloads não estão disponíveis nesta visualização.";
+}
+
+/* ---- Presença ---- */
+function renderPeers(){
+  const box=$("#peers"), seen=new Set(), list=[];
+  S.peers.forEach(p=>{ if(p.kind!=="viewer") return; const k=p.by||p.peer; if(seen.has(k)) return; seen.add(k); list.push(p); });
+  if(list.length<2){ box.innerHTML=""; return; }
+  box.innerHTML="";
+  list.slice(0,5).forEach(p=>{ const n=S.names[p.by]; const im=document.createElement("img");
+    im.src=(n&&n.avatar)||"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><rect width="26" height="26" fill="#87949c"/></svg>');
+    im.alt=""; im.title=(p.isMe?"Você":(n&&n.name)||"Visitante")+(p.presence&&p.presence.page?" · "+p.presence.page:""); box.appendChild(im); });
+  if(list.length>5){ const m=document.createElement("span"); m.className="more"; m.textContent="+"+(list.length-5); box.appendChild(m); }
+  const s=document.createElement("span"); s.className="more"; s.textContent=list.length+" online"; box.appendChild(s);
+}
+function setPresence(){ try{ room&&room.presence({page:S.page,editing:S.editing||null}); }catch(e){} }
+
+/* ============ modal ============ */
+function openModal(id){
+  const a=id?acts().find(x=>x.id===id):null;
+  if(id&&!a) return;
+  const isNew=!id, custom=isNew||a.custom;
+  $("#fId").value=id||"";
+  $("#mTitle").textContent=isNew?"Nova atividade":(S.canWrite?"Editar atividade":"Detalhes da atividade");
+  $("#fInfo").innerHTML=isNew?"Cadastre uma ação ou tarefa adicional em um dos pilares.":`<b>${esc(a.code)}</b> — ${esc(a.description)}<br><span class="small">${esc(a.pillar)} · ${esc(a.type)} · ${fmtD(a.startDate)} a ${fmtD(a.endDate)}${a.resource?" · Recurso: "+esc(a.resource):""}</span>`;
+  $("#fCustom").classList.toggle("hidden",!custom);
+  $("#fPillar").innerHTML=pillarList().map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+  $("#fStatus").innerHTML=STATUS.map(s=>`<option>${s}</option>`).join("");
+  const v=a||{pillarId:pillarList()[0]&&pillarList()[0].id,type:"Tarefa",code:"",resource:"",startDate:"",endDate:"",description:"",status:"Não iniciado",progress:0,responsible:"",newDate:"",justification:"",recoveryResponsible:"",recoveryPlan:"",history:[]};
+  $("#fPillar").value=v.pillarId; $("#fType").value=v.type; $("#fCode").value=v.code; $("#fRes").value=v.resource; $("#fStart").value=v.startDate; $("#fEnd").value=v.endDate; $("#fDesc").value=v.description;
+  $("#fStatus").value=v.status; $("#fProg").value=v.progress||0; $("#fNew").value=v.newDate; $("#fResp").value=v.responsible;
+  $("#fJust").value=v.justification; $("#fRecResp").value=v.recoveryResponsible; $("#fRecPlan").value=v.recoveryPlan;
+  $("#fLateHint").classList.toggle("hidden",!(a&&effStatus(a)==="Atrasado"));
+  $("#fHistBox").classList.toggle("hidden",!v.history.length);
+  $("#fHist").innerHTML=[...v.history].reverse().map(h=>`<div><b>${esc(fmtDT(h.at))}</b> · ${esc(nameOf(h.by))}<br>${esc(h.t)}</div>`).join("");
+  resolveNames(v.history.map(h=>h.by));
+  $("#fDelete").classList.toggle("hidden",!(a&&a.custom&&S.canWrite));
+  $("#fSave").classList.toggle("hidden",!S.canWrite);
+  $("#mForm").querySelectorAll("input,select,textarea").forEach(el=>{ if(el.type!=="hidden") el.disabled=!S.canWrite; });
+  $("#mb").classList.remove("hidden");
+  S.editing=id||null; setPresence();
+}
+function closeModal(){ $("#mb").classList.add("hidden"); S.editing=null; setPresence(); }
+async function submitModal(ev){
+  ev.preventDefault();
+  const id=$("#fId").value, a=id?acts().find(x=>x.id===id):null;
+  const base={status:$("#fStatus").value,progress:$("#fProg").value,responsible:$("#fResp").value.trim(),newDate:$("#fNew").value,
+    justification:$("#fJust").value.trim(),recoveryResponsible:$("#fRecResp").value.trim(),recoveryPlan:$("#fRecPlan").value.trim()};
+  if(!id){
+    const code=$("#fCode").value.trim(), desc=$("#fDesc").value.trim(), s=$("#fStart").value, e=$("#fEnd").value, pid=$("#fPillar").value;
+    if(!pid||!code||!desc||!s||!e){ toast("Preencha pilar, código, descrição e as duas datas."); return; }
+    if(e<s){ toast("A conclusão não pode ser anterior ao início."); return; }
+    const nid="c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    const patch=normalizePatch(base,{status:"Não iniciado",progress:0});
+    const ok=await saveEdit(nid,{...patch,custom:true,pillarId:pid,code,description:desc,resource:$("#fRes").value.trim(),type:$("#fType").value,startDate:s,endDate:e},"Atividade criada manualmente");
+    if(ok){ closeModal(); toast("Atividade criada."); } return;
+  }
+  const patch=normalizePatch(base,a);
+  let extra={};
+  if(a.custom){ const s=$("#fStart").value, e=$("#fEnd").value; if(!$("#fCode").value.trim()||!$("#fDesc").value.trim()||!s||!e){ toast("Preencha código, descrição e datas."); return; }
+    extra={pillarId:$("#fPillar").value,code:$("#fCode").value.trim(),description:$("#fDesc").value.trim(),resource:$("#fRes").value.trim(),type:$("#fType").value,startDate:s,endDate:e}; }
+  const h=diffText(a,patch);
+  const ok=await saveEdit(id,{...patch,...extra},h||"Registro revisado");
+  if(ok){ closeModal(); toast("Atividade atualizada."); }
+}
+
+/* ============ ações em linha ============ */
+async function saveLate(id){
+  const card=document.querySelector(`[data-late="${CSS.escape(id)}"]`); if(!card) return;
+  const a=acts().find(x=>x.id===id); if(!a) return;
+  const patch={newDate:card.querySelector(".l-date").value,recoveryResponsible:card.querySelector(".l-rr").value.trim(),
+    justification:card.querySelector(".l-just").value.trim(),recoveryPlan:card.querySelector(".l-plan").value.trim()};
+  const h=diffText(a,patch); if(!h){ toast("Nenhuma alteração para salvar."); return; }
+  pendingDefer=false;
+  if(await saveEdit(id,patch,h)) toast("Registro salvo.");
+}
+async function markDone(id){
+  const a=acts().find(x=>x.id===id); if(!a) return;
+  if(await saveEdit(id,{status:"Concluído",progress:100},"Status: "+a.status+" → Concluído")) toast("Atividade concluída.");
+}
+async function saveLeader(id){
+  if(!S.canAdmin) return;
+  const inp=document.querySelector(`[data-leader="${CSS.escape(id)}"]`); if(!inp) return;
+  const val=inp.value.trim(); pendingDefer=false;
+  S.leaders[id]={name:val,updatedAt:new Date().toISOString(),updatedBy:S.me&&S.me.id||null};
+  if(await put("leaders/"+id,S.leaders[id])){ toast("Líder atualizado."); }
+  dirty();
+}
+async function deleteActivity(){
+  const id=$("#fId").value; if(!id) return;
+  if(!window.__delArmed){ window.__delArmed=true; $("#fDelete").textContent="Confirmar exclusão"; setTimeout(()=>{ window.__delArmed=false; $("#fDelete").textContent="Excluir"; },4000); return; }
+  window.__delArmed=false; $("#fDelete").textContent="Excluir";
+  if(await saveEdit(id,{deleted:true},"Atividade excluída")){ closeModal(); toast("Atividade excluída."); }
+}
+
+/* ============ exportação ============ */
+function dateCell(v){ const d=parseDate(v); return d?new Date(d.getFullYear(),d.getMonth(),d.getDate(),12):""; }
+function rowsFor(list){
+  return list.map(a=>({"Pilar":a.pillar,"Fase":a.phase,"Código":a.code,"Tipo":a.type,"Ação Macro / Tarefa":a.description,"Recurso Necessário":a.resource,
+    "Responsável":a.responsible,"Data de Início":dateCell(a.startDate),"Previsão de Conclusão":dateCell(a.endDate),"Nova Data":dateCell(a.newDate),
+    "Status":effStatus(a),"Progresso (%)":a.progress,"Justificativa":a.justification,"Responsável pela Recuperação":a.recoveryResponsible,
+    "Plano de Recuperação":a.recoveryPlan,"Última Atualização":a.updatedAt?fmtDT(a.updatedAt):"","Atualizado por":a.updatedAt?nameOf(a.updatedBy):""}));
+}
+function sheetFrom(rows,widths){
+  const ws=XLSX.utils.json_to_sheet(rows,{dateNF:"dd/mm/yyyy"});
+  if(rows.length){ ws["!cols"]=Object.keys(rows[0]).map(k=>({wch:widths[k]||Math.min(40,Math.max(12,k.length+2))})); }
+  return ws;
+}
+async function saveFile(filename,data){
+  if(!dl){ toast("Download indisponível nesta visualização."); return; }
+  try{ await dl.save({filename,data}); toast("Arquivo gerado."); }
+  catch(e){ if(!e||e.code!=="declined") toast("Não foi possível salvar o arquivo."); }
+}
+async function exportXlsx(){
+  if(!acts().length){ toast("Importe o Roadmap antes de exportar."); return; }
+  if(!window.XLSX){ toast("Biblioteca de Excel indisponível."); return; }
+  const W={"Ação Macro / Tarefa":55,"Justificativa":45,"Plano de Recuperação":45,"Pilar":28,"Responsável":22,"Responsável pela Recuperação":24};
+  const wb=XLSX.utils.book_new(), A=acts();
+  XLSX.utils.book_append_sheet(wb,sheetFrom(rowsFor(A),W),"Atividades");
+  XLSX.utils.book_append_sheet(wb,sheetFrom(rowsFor(A.filter(a=>effStatus(a)==="Atrasado")),W),"Atrasadas");
+  XLSX.utils.book_append_sheet(wb,sheetFrom(pillarList().map(p=>({"Pilar":p.name,"Fase":p.phase,"Líder":leaderOf(p),"Início":dateCell(p.startDate),"Conclusão":dateCell(p.endDate),
+    "Atividades":A.filter(a=>a.pillarId===p.id).length,"Progresso médio (%)":pillarProgress(p)})),W),"Pilares e Líderes");
+  const used=new Set(["Atividades","Atrasadas","Pilares e Líderes"]);
+  pillarList().forEach(p=>{
+    let nm=p.name.replace(/[\\\/\?\*\[\]:]/g," ").slice(0,28).trim()||"Pilar"; let k=nm,i=2; while(used.has(k)) k=nm.slice(0,26)+" "+(i++); used.add(k);
+    const rows=rowsFor(A.filter(a=>a.pillarId===p.id)).map(r=>{ const o={...r}; delete o["Pilar"]; delete o["Fase"]; return o; });
+    XLSX.utils.book_append_sheet(wb,sheetFrom(rows,W),k);
+  });
+  const buf=XLSX.write(wb,{bookType:"xlsx",type:"array",cellDates:true});
+  await saveFile("roadmap_aemco_atualizado.xlsx",buf);
+}
+function csvOf(list){
+  const rows=rowsFor(list).map(r=>{ const o={}; for(const k in r){ o[k]=r[k] instanceof Date?r[k].toLocaleDateString("pt-BR"):r[k]; } return o; });
+  if(!rows.length) return "";
+  const cols=Object.keys(rows[0]), q=v=>`"${String(v??"").replace(/"/g,'""').replace(/\r?\n/g," ")}"`;
+  return "\uFEFF"+[cols.map(q).join(";"),...rows.map(r=>cols.map(c=>q(r[c])).join(";"))].join("\r\n");
+}
+async function exportCsv(late){
+  const list=late?acts().filter(a=>effStatus(a)==="Atrasado"):acts();
+  if(!list.length){ toast("Não existem dados para exportar."); return; }
+  await saveFile(late?"atividades_atrasadas_aemco.csv":"roadmap_aemco.csv",csvOf(list));
+}
+async function exportJson(){
+  const d={version:2,exportedAt:new Date().toISOString(),meta:S.meta,pillars:pillarList().map(p=>({id:p.id,name:p.name,phase:p.phase,startDate:p.startDate,endDate:p.endDate,importedLeader:p.importedLeader,order:p.order,activities:p.activities})),edits:S.edits,leaders:S.leaders};
+  await saveFile("backup_roadmap_aemco.json",JSON.stringify(d,null,2));
+}
+async function restoreJson(file){
+  await ready;
+  if(!S.canAdmin){ toast("Apenas proprietário/editores podem restaurar."); return; }
+  let d; try{ d=JSON.parse(await file.text()); }catch(e){ toast("O arquivo JSON não é válido."); return; }
+  if(!d||!Array.isArray(d.pillars)){ toast("Formato de backup não reconhecido."); return; }
+  const box=$("#importResult");
+  try{
+    await writeBase(d.pillars,(d.meta&&d.meta.fileName)||"backup",m=>{ box.innerHTML=`<div class="alert al-info">${esc(m)}</div>`; });
+    const ed=Object.entries(d.edits||{}); let n=0;
+    if(!db){ S.edits=d.edits||{}; S.leaders=d.leaders||{}; saveLocal(); }
+    else{
+      for(const [id,e] of ed){ box.innerHTML=`<div class="alert al-info">Restaurando atualizações ${++n} de ${ed.length}…</div>`; await put("edits/"+id,e); }
+      for(const [id,l] of Object.entries(d.leaders||{})) await put("leaders/"+id,l);
+    }
+    dirty(); box.innerHTML='<div class="alert al-info">Backup restaurado com sucesso.</div>'; toast("Backup restaurado.");
+  }catch(e){ box.innerHTML='<div class="alert al-bad">Falha ao restaurar o backup.</div>'; }
+}
+
+/* ============ navegação e eventos ============ */
+const TITLES={dashboard:"Visão geral",activities:"Atividades",gantt:"Gráfico de Gantt",pillars:"Pilares e líderes",reports:"Atrasos e recuperação",data:"Dados e exportação"};
+function showPage(p){
+  S.page=p;
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("on",x.id==="page-"+p));
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.page===p));
+  $("#topTitle").textContent=TITLES[p]; renderAll(); setPresence(); window.scrollTo(0,0);
+}
+let toastT;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.remove("hidden"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.add("hidden"),3400); }
+
+document.addEventListener("click",ev=>{
+  const nb=ev.target.closest("#nav button"); if(nb){ showPage(nb.dataset.page); return; }
+  const el=ev.target.closest("[data-act]"); if(!el) return;
+  const act=el.dataset.act, id=el.dataset.id;
+  if(act==="goto"){ ev.preventDefault(); showPage(el.dataset.page); }
+  else if(act==="pickFile") $("#fileXlsx").click();
+  else if(act==="pickJson") $("#fileJson").click();
+  else if(act==="edit") openModal(id);
+  else if(act==="newActivity") openModal(null);
+  else if(act==="closeModal") closeModal();
+  else if(act==="deleteActivity") deleteActivity();
+  else if(act==="saveLate") saveLate(id);
+  else if(act==="done") markDone(id);
+  else if(act==="saveLeader") saveLeader(id);
+  else if(act==="exportXlsx") exportXlsx();
+  else if(act==="exportCsv") exportCsv(false);
+  else if(act==="exportLateCsv") exportCsv(true);
+  else if(act==="exportJson") exportJson();
+  else if(act==="clearFilters"){ ["#aSearch","#aPillar","#aResp","#aStatus","#aType","#aSort"].forEach(s=>$(s).value=""); renderActivities(); }
+  else if(act==="openPillar"){ const p=S.pillars[id]; showPage("activities"); $("#aPillar").value=p?p.name:""; renderActivities(); }
+  else if(act==="toggleGroup"){ S.collapsed.has(id)?S.collapsed.delete(id):S.collapsed.add(id); renderGantt(); }
+  else if(act==="ganttCollapse"){ pillarList().forEach(p=>S.collapsed.add(p.id)); renderGantt(); }
+  else if(act==="ganttExpand"){ S.collapsed.clear(); renderGantt(); }
+  else if(act==="ganttToday"){ const sc=$("#gScroll"); if(sc) sc.scrollLeft=Math.max(0,Number($("#gBox").dataset.x||0)-sc.clientWidth/3); }
+  else if(act==="theme"){ const r=document.documentElement; const dark=(r.dataset.theme==="dark")||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches); r.dataset.theme=dark?"light":"dark"; }
+});
+$("#mb").addEventListener("mousedown",ev=>{ if(ev.target.id==="mb") closeModal(); });
+document.addEventListener("keydown",ev=>{ if(ev.key==="Escape"&&!$("#mb").classList.contains("hidden")) closeModal(); });
+$("#mForm").addEventListener("submit",submitModal);
+$("#fileXlsx").addEventListener("change",e=>{ const f=e.target.files[0]; if(f){ showPage("data"); importFile(f); } e.target.value=""; });
+$("#fileJson").addEventListener("change",e=>{ const f=e.target.files[0]; if(f) restoreJson(f); e.target.value=""; });
+["#aSearch","#aPillar","#aResp","#aStatus","#aType","#aSort"].forEach(s=>{ $(s).addEventListener("input",renderActivities); $(s).addEventListener("change",renderActivities); });
+["#gPillar","#gType","#gZoom"].forEach(s=>$(s).addEventListener("change",renderGantt));
+["#lPillar","#lNoJust"].forEach(s=>$(s).addEventListener("change",renderReports));
+
+/* ============ inicialização ============ */
+(async function init(){
+  loadLocal(); S.mode="connecting"; renderAll();
+  const c=window.claude;
+  if(c&&typeof c.use==="function"){
+    const get=n=>c.use(n).catch(()=>null);
+    [db,userNS,room,dl]=await Promise.all([get("db"),get("user"),get("room"),get("downloads")]);
+  }
+  if(userNS){
+    try{ S.me=await userNS.me(); }catch(e){}
+    try{ const w=await userNS.can("data.write"); S.canWrite=w!==false; }catch(e){}
+    try{ S.canAdmin=await userNS.canEdit(); }catch(e){}
+  }
+  if(db){
+    S.mode="shared"; S.pillars={}; S.edits={}; S.leaders={}; S.meta=null; S.loaded={};
+    if(!userNS){ S.canAdmin=false; }
+    subscribe();
+  }else{
+    S.mode="local"; S.canWrite=true; S.canAdmin=true;
+  }
+  if(room){
+    try{ room.onPeers(ch=>{ S.peers=ch.peers; resolveNames(ch.peers.map(p=>p.by)); scheduleRender(); }); setPresence(); }catch(e){}
+  }
+  resolveReady(); S.cache=null; renderAll();
+})();
+setInterval(()=>{ if(S.page==="dashboard"||S.page==="reports") scheduleRender(); },10*60*1000);
+</script>
+</body>
+</html>
